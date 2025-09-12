@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+    <link rel="stylesheet" href="/css/table.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#btnLogin").on("click", function () {
+                $.ajax({
+                    url: "/user/loginProc",
+                    type: "post",
+                    dataType: "JSON",
+                    data: $("#f").serialize(),
+                    success: function (json) {
+                        if (json.result === 1) {
+                            location.href = "/user/loginSuccess";
+                        } else {
+                            alert(json.msg);
+                        }
+                    }
+                })
+            })
+        });
+    </script>
+</head>
+<body>
+<div class="container">
+    <h2>로그인</h2>
+    <form id="f">
+        <div class="form-group">
+            <label for="email">이메일</label>
+            <input type="email" name="email" id="email" required/>
+        </div>
+        <div class="form-group">
+            <label for="password">비밀번호</label>
+            <input type="password" name="password" id="password" required/>
+        </div>
+        <button type="button" id="btnLogin">로그인</button>
+    </form>
+</div>
+</body>
+</html>
