@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -22,8 +24,8 @@ public class MovieApiService {
 
     private final MovieRepository movieRepository;
 
-    public TmdbResponseDTO getNowPlayingMovies(int page) {
-        log.info(this.getClass().getName() + ".getNowPlayingMovies Start!");
+    public void saveNowPlayingMovies(int page) {
+        log.info(this.getClass().getName() + ".saveNowPlayingMovies Start!");
 
         TmdbResponseDTO response = movieApiService.getNowPlayingMovies( page, "ko-KR");
 
@@ -35,6 +37,8 @@ public class MovieApiService {
                         .posterUrl("https://image.tmdb.org/t/p/w500" + movieDto.posterPath())
                         .overview(movieDto.overview())
                         .voteAverage(movieDto.voteAverage())
+                        .releaseDate(movieDto.releaseDate())
+                        .genreIds(movieDto.genreIds().toString())
                         .build();
 
                 movieRepository.save(movieEntity);
@@ -43,9 +47,17 @@ public class MovieApiService {
 
         }
 
+        log.info(this.getClass().getName() + ".saveNowPlayingMovies End!");
+
+    }
+
+    public List<MovieEntity> getNowPlayingMovies() {
+        log.info(this.getClass().getName() + ".getNowPlayingMovies Start!");
+
+        List<MovieEntity> movieList = movieRepository.findAll();
+
         log.info(this.getClass().getName() + ".getNowPlayingMovies End!");
 
-        return response;
-
+        return movieList;
     }
 }

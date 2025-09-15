@@ -41,7 +41,7 @@ Backend	Spring Boot	Monolithic architecture design, layered structure developmen
 Database	MariaDB (Main), Redis (Session Mgt.)	RDB table design (ERD), data management with JPA, Spring Session Redis integration.
 Cloud	AWS (EC2, RDS, ElastiCache)	Deploying the Spring Boot project to AWS, setting up HTTPS/Domain.
 API Integration	Spring Cloud OpenFeign	How to call the TMDB API using OpenFeign, including configuration and error handling.
-Frontend	HTML5, Bootstrap	Basic UI/UX implementation, connecting with the backend API.
+Frontend	React	Component-based UI/UX development, state management, and communication with the backend REST API.
 
 Sheets로 내보내기
 🚨 Strategy for Meeting Key Requirements

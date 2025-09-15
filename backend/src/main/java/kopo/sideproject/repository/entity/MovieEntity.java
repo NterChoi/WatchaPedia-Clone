@@ -24,11 +24,11 @@ public class MovieEntity {
     @Column(name = "movie_title", nullable = false)
     private String movieTitle;
 
-    @Column(name = "genre")
-    private String genre;
+    @Column(name = "genre_ids")
+    private String genreIds;
 
-    @Column(name = "director")
-    private String director;
+    @Column(name = "release_date")
+    private String releaseDate;
 
     @Column(name = "poster_url")
     private String posterUrl;

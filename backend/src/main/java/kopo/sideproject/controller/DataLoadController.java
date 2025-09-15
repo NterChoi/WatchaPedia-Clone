@@ -24,7 +24,7 @@ public class DataLoadController {
         MsgDTO dto;
 
         try {
-            movieApiService.getNowPlayingMovies(1);
+            movieApiService.saveNowPlayingMovies(1);
 
                         dto = MsgDTO.builder().msg("TMDB 현재 상영작 정보 저장 성공!").build();
         }catch (Exception e){
