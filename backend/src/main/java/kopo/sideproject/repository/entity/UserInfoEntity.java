@@ -15,7 +15,6 @@ import org.hibernate.annotations.DynamicUpdate;
 @DynamicInsert
 @DynamicUpdate
 @Builder
-@Cacheable
 @Entity
 public class UserInfoEntity {
 

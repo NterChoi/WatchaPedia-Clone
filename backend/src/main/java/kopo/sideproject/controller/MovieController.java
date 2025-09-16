@@ -7,10 +7,7 @@ import kopo.sideproject.service.impl.MovieApiService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,5 +36,23 @@ public class MovieController {
         log.info(this.getClass().getName() + ".getNowPlayingMovies End!");
 
         return ResponseEntity.ok(movieList);
+    }
+
+    @GetMapping("/{movieId}")
+    public ResponseEntity<MovieEntity> getMovieById(@PathVariable("movieId") Long movieId) {
+        log.info(this.getClass().getName() + ".getMovieByIdMovies Start!");
+        log.info("Requested movieId: " + movieId);
+
+        MovieEntity movie = movieApiService.getMovieDetails(movieId);
+
+        if (movie != null) {
+            // 영화 정보가 있으면 200 OK 상태와 함꼐 영화 데이터를 반환
+            log.info("Found movie: " + movie.getMovieTitle());
+            return ResponseEntity.ok(movie);
+        } else {
+            // 영화 정보가 없으면 404 Not Found 상태를 반환
+            log.warn("Movie not found with id: " + movieId);
+            return ResponseEntity.notFound().build();
+        }
     }
 }

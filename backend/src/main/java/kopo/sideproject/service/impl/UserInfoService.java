@@ -8,6 +8,7 @@ import kopo.sideproject.util.CmmUtil;
 import kopo.sideproject.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -18,6 +19,7 @@ import java.util.Optional;
 public class UserInfoService implements IUserInfoService {
 
     private final UserInfoRepository userInfoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserInfoDTO getEmailExists(UserInfoDTO pDTO) throws Exception {
@@ -39,33 +41,43 @@ public class UserInfoService implements IUserInfoService {
 
     @Override
     public int signup(UserInfoDTO pDTO) throws Exception {
-        log.info("{}.signup() start!",this.getClass().getName());
+        log.info("{}.insertUserInfo() start!",this.getClass().getName());
 
         log.info("pDTO : {}", pDTO);
 
         // 회원가입 성공 : 1, 아이디 중복으로 인한 가입 취소 : 2, 기타 에러 발생 : 0
         int res;
 
-        String email = CmmUtil.nvl(pDTO.email());
-        String password = CmmUtil.nvl(pDTO.password());
+        String email = pDTO.email();
+        String password = pDTO.password();
 
         Optional<UserInfoEntity> user =  userInfoRepository.findByEmail(email);
 
         if (user.isPresent()) {
             res = 2;
+            log.info("Email already exists!");
         } else {
 
             UserInfoEntity userEntity = UserInfoEntity.builder()
                     .email(email)
-                    .password(password)
+                    .password(passwordEncoder.encode(password)) // BCrypt로 비밀번호 암호화
                     .regDt(DateUtil.getDateTime("yyyy-MM-dd hh:mm:ss"))
                     .build();
 
             userInfoRepository.save(userEntity);
 
-            res = userInfoRepository.findByEmail(email).isPresent() ? 1 : 0;
+            user = userInfoRepository.findByEmail(email);
+
+            if (user.isPresent()) {
+                res = 1;
+                log.info("User signup successfully for email: {}", email);
+            } else {
+                res = 0;
+                log.info("User signup failed for email: {}", email);
+            }
         }
-        log.info("{}.signup() End!", this.getClass().getName());
+
+        log.info("{}.insertUserInfo() End!", this.getClass().getName());
 
         return res;
     }
@@ -74,15 +86,31 @@ public class UserInfoService implements IUserInfoService {
     public int getUserLogin(UserInfoDTO pDTO) throws Exception {
         log.info("{}.getUserLogin() start!",this.getClass().getName());
 
-        String email = CmmUtil.nvl(pDTO.email());
-        String password = CmmUtil.nvl(pDTO.password());
+        int res = 0;
 
-        log.info("email : {}, password : {}",  email, password);
+        String email = pDTO.email();
+        String password = pDTO.password();
 
-        boolean exists = userInfoRepository.findByEmailAndPassword(email, password).isPresent();
+        log.info("email : {}",  email);
+
+        Optional<UserInfoEntity> user =  userInfoRepository.findByEmail(email);
+
+        if (user.isPresent()) {
+            String dbPassword = user.get().getPassword();
+
+            // .matches()가 입력된 비밀번호와 DB의 암호화된 비밀번호를 비교
+            if (passwordEncoder.matches(password, dbPassword)) {
+                res = 1;
+                log.info("User signup successfully for email: {}", email);
+            } else {
+                log.warn("password mismath for email: {}", email);
+            }
+        } else {
+            log.warn("user not found for email: {}", email);
+        }
 
         log.info("{}.getUserLogin End!", this.getClass().getName());
 
-        return exists ? 1 : 0;
+        return res;
     }
 }

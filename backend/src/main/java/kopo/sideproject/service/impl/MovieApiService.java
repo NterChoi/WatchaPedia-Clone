@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -60,4 +61,19 @@ public class MovieApiService {
 
         return movieList;
     }
+
+    public MovieEntity getMovieDetails(Long movieId) {
+        log.info(this.getClass().getName() + ".getMovieDetails Start!");
+
+        // JpaRepository의 findById는 Optional<T>를 반환.
+        Optional<MovieEntity> movieEntityOptional = movieRepository.findById(movieId);
+
+        // Optional 객체가 비어있을 경우(결과 없음) null 을 반환.
+        MovieEntity movieEntity = movieEntityOptional.orElse(null);
+
+        log.info(this.getClass().getName() + ".getMovieDetails End!");
+
+        return movieEntity;
+    }
+
 }
