@@ -76,4 +76,15 @@ public class MovieApiService {
         return movieEntity;
     }
 
+    public TmdbResponseDTO getPopularMovies(int page) {
+        log.info(this.getClass().getName() + ".getPopularMovies Start!");
+
+        // Feign Client를 사용하여 TMDB API 호출
+        TmdbResponseDTO response = movieApiService.getPopularMovies( page, "ko-KR");
+
+        log.info(this.getClass().getName() + ".getPopularMovies End!");
+
+        return response;
+    }
+
 }

@@ -28,6 +28,9 @@ public class UserInfoEntity {
     @Column(name = "PASSWORD",  nullable = false)
     private String password;
 
+    @Column(name = "nickname", nullable = false)
+    private String nickname;
+
     @Column(name = "reg_dt", updatable = false)
     private String regDt;
 }

@@ -20,4 +20,10 @@ public interface IMovieApiService {
             @RequestParam("page") int page,
             @RequestParam("language") String language
     );
+
+    @GetMapping("/movie/popular")
+    TmdbResponseDTO getPopularMovies(
+            @RequestParam("page") int page,
+            @RequestParam("language") String language
+    );
 }

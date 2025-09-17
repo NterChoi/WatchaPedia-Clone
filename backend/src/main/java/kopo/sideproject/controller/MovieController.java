@@ -55,4 +55,16 @@ public class MovieController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @GetMapping("/popular")
+    public ResponseEntity<TmdbResponseDTO> getPopularMovies(@RequestParam(defaultValue = "1") int page) {
+        log.info(this.getClass().getName() + ".getPopularMovies Start!");
+
+        // 서비스 호출하여 인기 영화 정보 받아오기
+        TmdbResponseDTO popularMovies = movieApiService.getPopularMovies(page);
+
+        log.info(this.getClass().getName() + ".getPopularMovies End!");
+
+        return ResponseEntity.ok(popularMovies);
+    }
 }
