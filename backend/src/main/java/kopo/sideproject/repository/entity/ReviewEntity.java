@@ -1,6 +1,7 @@
 package kopo.sideproject.repository.entity;
 
 import jakarta.persistence.*;
+import kopo.sideproject.dto.ReviewRequestDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,4 +36,9 @@ public class ReviewEntity {
 
     @Column(name = "content", length = 5000)
     private String content;
+
+    public void updateReview(Double rating, String content) {
+        this.rating = rating;
+        this.content = content;
+    }
 }

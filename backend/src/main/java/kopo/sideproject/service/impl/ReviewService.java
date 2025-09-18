@@ -75,4 +75,30 @@ public class ReviewService implements IReviewService {
         log.info(this.getClass().getSimpleName(), "postReview End!");
 
     }
+
+    @Override
+    @Transactional
+    public void updateReview(Long reviewId, ReviewRequestDTO review) {
+        log.info(this.getClass().getSimpleName(), "updateReview Start!");
+
+        log.info("movie id: " + reviewId + "review: " + review.toString());
+
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + reviewId));
+
+        reviewEntity.updateReview(review.rating(), review.content());
+
+        log.info(this.getClass().getSimpleName(), "updateReview End!");
+
+    }
+
+    @Override
+    public void deleteReview(Long reviewId) {
+        log.info(this.getClass().getSimpleName(), "deleteReview Start!");
+
+        log.info("review id: " + reviewId);
+
+        reviewRepository.deleteById(reviewId);
+
+        log.info(this.getClass().getSimpleName(), "deleteReview End!");
+    }
 }

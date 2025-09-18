@@ -45,4 +45,27 @@ public class ReviewController {
         return ResponseEntity.ok().build();
 
     }
+
+    @PutMapping("/reviews/{reviewId}")
+    public ResponseEntity<Void> updateReview(@PathVariable("reviewId") Long reviewId, @RequestBody ReviewRequestDTO reviewDTO) {
+        log.info(this.getClass().getSimpleName(), "updateReview Start!");
+        log.info("reviewId: " + reviewId);
+
+        this.reviewService.updateReview(reviewId, reviewDTO);
+
+        log.info(this.getClass().getSimpleName(), "updateReview End!");
+
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/reviews/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@PathVariable("reviewId") Long reviewId) {
+        log.info(this.getClass().getSimpleName(), "deleteReview Start!");
+        log.info("reviewId: " + reviewId);
+        this.reviewService.deleteReview(reviewId);
+
+        log.info(this.getClass().getSimpleName(), "deleteReview End!");
+
+        return ResponseEntity.ok().build();
+    }
 }
