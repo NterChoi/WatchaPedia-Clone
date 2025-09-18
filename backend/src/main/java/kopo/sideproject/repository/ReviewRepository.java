@@ -10,7 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface ReviewRepository extends JpaRepository<ReviewEntity, Long> {
-    List<ReviewEntity> findByMovie(Optional<MovieEntity> movie);
-
-    MovieEntity movie(MovieEntity movie);
+    List<ReviewEntity> findByMovie(MovieEntity movie);
 }
