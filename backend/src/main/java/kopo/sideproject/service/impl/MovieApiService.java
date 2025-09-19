@@ -87,4 +87,13 @@ public class MovieApiService {
         return response;
     }
 
+    public TmdbResponseDTO searchMovies(String query, int page) {
+        log.info(this.getClass().getName() + ".searchMovies Start!");
+
+        TmdbResponseDTO responseDTO = movieApiService.getSearchMovies( query, page, "ko-KR");
+
+        log.info(this.getClass().getName() + ".searchMovies End!");
+
+        return responseDTO;
+    }
 }

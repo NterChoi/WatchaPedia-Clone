@@ -67,4 +67,16 @@ public class MovieController {
 
         return ResponseEntity.ok(popularMovies);
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<TmdbResponseDTO> searchMovies(@RequestParam("query") String query, @RequestParam(defaultValue = "1") int page) {
+        log.info(this.getClass().getName() + ".searchMovies Start!");
+        log.info("Requested query: " + query);
+
+        TmdbResponseDTO searchMovies = movieApiService.searchMovies(query, page);
+
+        log.info(this.getClass().getName() + ".searchMovies End!");
+
+        return ResponseEntity.ok(searchMovies);
+    }
 }

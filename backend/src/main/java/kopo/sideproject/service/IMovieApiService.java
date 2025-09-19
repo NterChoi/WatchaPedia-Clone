@@ -26,4 +26,14 @@ public interface IMovieApiService {
             @RequestParam("page") int page,
             @RequestParam("language") String language
     );
+
+    /**
+     * TMDB API를 사용하여 영화를 검색
+     * @param query 검색할 키워드
+     * @param page 검색 페이지 번호
+     * @param language 응답 언어
+     * @return 검색된 영화 목록을 포함함는 응답 DTO
+     */
+    @GetMapping("/search/movie")
+    TmdbResponseDTO getSearchMovies(@RequestParam("query") String query, @RequestParam("page") int page, @RequestParam("language") String language);
 }
