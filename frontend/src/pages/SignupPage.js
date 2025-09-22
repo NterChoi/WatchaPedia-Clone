@@ -1,6 +1,3 @@
-// React의 기본 기능과 'Hook'들을 가져옵니다.
-// useState: 컴포넌트 안에서 변하는 값(상태)을 관리하는 Hook
-// useNavigate: 코드를 통해 다른 페이지로 이동시킬 때 사용하는 Hook
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -12,6 +9,8 @@ function SignupPage() {
     const [email, setEmail] = useState('');
     // input에 입력된 비밀번호 값을 저장할 'password' 상태
     const [password, setPassword] = useState('');
+    // input에 입력된 닉네임 값을 저장할 'nickname' 상태
+    const [nickname, setNickname] = useState('');
     // API 요청 후 사용자에게 보여줄 메시지를 저장할 'message' 상태
     const [message, setMessage] = useState('');
     // 메시지가 성공 메시지인지, 에러 메시지인지 구분하기 위한 'isError' 상태
@@ -39,7 +38,7 @@ function SignupPage() {
                 },
                 // body에는 서버로 보낼 실제 데이터를 담습니다.
                 // JavaScript 객체를 JSON 문자열로 변환하기 위해 JSON.stringify()를 사용합니다.
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({email, password, nickname}),
             });
 
             // API 응답으로 받은 JSON 데이터를 JavaScript 객체로 변환합니다.
@@ -69,12 +68,18 @@ function SignupPage() {
 
     // 화면에 보여줄 UI를 JSX로 작성하여 반환합니다.
     return (
-        <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc', borderRadius: '10px' }}>
+        <div style={{
+            maxWidth: '400px',
+            margin: '50px auto',
+            padding: '20px',
+            border: '1px solid #ccc',
+            borderRadius: '10px'
+        }}>
             <h2>회원가입</h2>
             {/* form 태그의 onSubmit 이벤트에 위에서 만든 handleSubmit 함수를 연결합니다. */}
             <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label htmlFor="email" style={{ display: 'block', marginBottom: '5px' }}>이메일</label>
+                <div style={{marginBottom: '15px'}}>
+                    <label htmlFor="email" style={{display: 'block', marginBottom: '5px'}}>이메일</label>
                     <input
                         type="email"
                         id="email"
@@ -84,27 +89,45 @@ function SignupPage() {
                         // setEmail 함수를 호출하여 'email' 상태를 업데이트합니다.
                         onChange={(e) => setEmail(e.target.value)}
                         required // 필수 입력 항목으로 지정합니다.
-                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                        style={{width: '100%', padding: '8px', boxSizing: 'border-box'}}
                     />
                 </div>
-                <div style={{ marginBottom: '15px' }}>
-                    <label htmlFor="password" style={{ display: 'block', marginBottom: '5px' }}>비밀번호</label>
+                <div style={{marginBottom: '15px'}}>
+                    <label htmlFor="nickname" style={{display: 'block', marginBottom: '5px'}}>닉네임</label>
+                    <input
+                        type="text"
+                        id="nickname"
+                        value={nickname} // input의 값을 'nickname' 상태와 동기화합니다.
+                        onChange={(e) => setNickname(e.target.value)}
+                        required
+                        style={{width: '100%', padding: '8px', boxSizing: 'border-box'}}
+                    />
+                </div>
+                <div style={{marginBottom: '15px'}}>
+                    <label htmlFor="password" style={{display: 'block', marginBottom: '5px'}}>비밀번호</label>
                     <input
                         type="password"
                         id="password"
                         value={password} // input의 값을 'password' 상태와 동기화합니다.
                         onChange={(e) => setPassword(e.target.value)}
                         required
-                        style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
+                        style={{width: '100%', padding: '8px', boxSizing: 'border-box'}}
                     />
                 </div>
-                <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>
+                <button type="submit" style={{
+                    width: '100%',
+                    padding: '10px',
+                    backgroundColor: '#007bff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '5px'
+                }}>
                     가입하기
                 </button>
             </form>
             {/* message 상태에 값이 있을 때만 <p> 태그를 화면에 보여줍니다. (조건부 렌더링) */}
             {message && (
-                <p style={{ marginTop: '15px', color: isError ? 'red' : 'green' }}>
+                <p style={{marginTop: '15px', color: isError ? 'red' : 'green'}}>
                     {message}
                 </p>
             )}

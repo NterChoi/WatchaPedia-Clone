@@ -48,10 +48,10 @@ public class UserInfoService implements IUserInfoService {
         // 회원가입 성공 : 1, 아이디 중복으로 인한 가입 취소 : 2, 기타 에러 발생 : 0
         int res;
 
-        String email = pDTO.email();
-        String password = pDTO.password();
 
-        Optional<UserInfoEntity> user =  userInfoRepository.findByEmail(email);
+
+
+        Optional<UserInfoEntity> user =  userInfoRepository.findByEmail(pDTO.email());
 
         if (user.isPresent()) {
             res = 2;
@@ -59,21 +59,22 @@ public class UserInfoService implements IUserInfoService {
         } else {
 
             UserInfoEntity userEntity = UserInfoEntity.builder()
-                    .email(email)
-                    .password(passwordEncoder.encode(password)) // BCrypt로 비밀번호 암호화
+                    .email(pDTO.email())
+                    .password(passwordEncoder.encode(pDTO.password())) // BCrypt로 비밀번호 암호화
+                    .nickname(pDTO.nickname())
                     .regDt(DateUtil.getDateTime("yyyy-MM-dd hh:mm:ss"))
                     .build();
 
             userInfoRepository.save(userEntity);
 
-            user = userInfoRepository.findByEmail(email);
+            user = userInfoRepository.findByEmail(pDTO.email());
 
             if (user.isPresent()) {
                 res = 1;
-                log.info("User signup successfully for email: {}", email);
+                log.info("User signup successfully for email: {}", pDTO.email());
             } else {
                 res = 0;
-                log.info("User signup failed for email: {}", email);
+                log.info("User signup failed for email: {}", pDTO.email());
             }
         }
 
