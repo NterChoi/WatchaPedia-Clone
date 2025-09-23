@@ -24,4 +24,6 @@ public interface IUserInfoService {
      * @return  로그인에 성공한 회원 정보 (실패 시 null)
      */
     UserInfoDTO getUserLogin(UserInfoDTO pDTO) throws Exception;
+
+    UserInfoDTO getUserInfo(String email) throws Exception;
 }

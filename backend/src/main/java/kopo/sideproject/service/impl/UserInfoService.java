@@ -117,4 +117,21 @@ public class UserInfoService implements IUserInfoService {
 
         return null;
     }
+
+    @Override
+    public UserInfoDTO getUserInfo(String email) throws Exception {
+        log.info("{}.getUserInfo() start!",this.getClass().getName());
+        log.info("email : {}", email);
+
+        UserInfoEntity userInfoEntity = userInfoRepository.findByEmail(email).orElse(null);
+
+        if (userInfoEntity != null) {
+            return UserInfoDTO.builder()
+                    .email(userInfoEntity.getEmail())
+                    .nickname(userInfoEntity.getNickname())
+                    .build();
+        }
+
+        return null;
+    }
 }

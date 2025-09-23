@@ -78,12 +78,19 @@ public class ReviewService implements IReviewService {
 
     @Override
     @Transactional
-    public void updateReview(Long reviewId, ReviewRequestDTO review) {
+    public void updateReview(Long reviewId, ReviewRequestDTO review, String userEmail) {
         log.info(this.getClass().getSimpleName(), "updateReview Start!");
 
-        log.info("movie id: " + reviewId + "review: " + review.toString());
+        log.info("review id: " + reviewId + "review: " + review.toString());
 
-        ReviewEntity reviewEntity = reviewRepository.findById(reviewId).orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + reviewId));
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + reviewId));
+
+        // 권한 검사: 요청한 사용자와 리뷰 작성자가 동일한지 확인
+        if (!reviewEntity.getUser().getEmail().equals(userEmail)) {
+            log.warn("User {} is not authorized to update review {}", userEmail, reviewId);
+            throw new IllegalArgumentException("User not authorized to update review");
+        }
 
         reviewEntity.updateReview(review.rating(), review.content());
 
@@ -92,10 +99,20 @@ public class ReviewService implements IReviewService {
     }
 
     @Override
-    public void deleteReview(Long reviewId) {
+    @Transactional
+    public void deleteReview(Long reviewId, String userEmail) {
         log.info(this.getClass().getSimpleName(), "deleteReview Start!");
 
         log.info("review id: " + reviewId);
+
+        ReviewEntity reviewEntity = reviewRepository.findById(reviewId)
+                        .orElseThrow(() -> new IllegalArgumentException("Review not found with id: " + reviewId));
+
+        // 권한 검사: 요청한 사용자와 리뷰 작성자가 동일한지 확인
+        if (!reviewEntity.getUser().getEmail().equals(userEmail)) {
+            log.warn("User {} is not authorized to delete review {}", userEmail, reviewId);
+            throw new IllegalArgumentException("User not authorized to delete review");
+        }
 
         reviewRepository.deleteById(reviewId);
 

@@ -11,7 +11,7 @@ public interface IReviewService {
 
     void postReview(Long movieId, ReviewRequestDTO review, String userEmail);
 
-    void updateReview(Long reviewId, ReviewRequestDTO review);
+    void updateReview(Long reviewId, ReviewRequestDTO review, String userEmail);
 
-    void deleteReview(Long reviewId);
+    void deleteReview(Long reviewId, String userEmail);
 }
