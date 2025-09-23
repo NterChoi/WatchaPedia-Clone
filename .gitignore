@@ -1,3 +1,6 @@
-
 # IntelliJ IDEA
 .idea/
+
+# Project Documentation Files
+GEMINI.md
+PROJECT_PLAN.md
