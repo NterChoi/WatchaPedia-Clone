@@ -1,5 +1,7 @@
 package kopo.sideproject.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import kopo.sideproject.dto.MsgDTO;
 import kopo.sideproject.dto.UserInfoDTO;
 import kopo.sideproject.service.impl.UserInfoService;
@@ -7,7 +9,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 
 @Slf4j
 @RequestMapping(value = "/api/user")
@@ -78,22 +88,41 @@ public class UserInfoController {
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<MsgDTO> login(@RequestBody UserInfoDTO pDTO) throws Exception {
+    public ResponseEntity<MsgDTO> login(@RequestBody UserInfoDTO pDTO, HttpServletRequest request) throws Exception {
         log.info("{}.loginProc Start!", this.getClass().getName());
         log.info("pDTO: {}", pDTO);
-        String msg;
 
-        int res = userInfoService.getUserLogin(pDTO);
-        log.info("Login result: {}", res);
+
+        UserInfoDTO rDTO = userInfoService.getUserLogin(pDTO);
+        log.info("Login result: {}", rDTO);
 
 
         log.info("{}.loginProc End!", this.getClass().getName());
 
-        if (res == 1) {
-            MsgDTO dto = MsgDTO.builder().result(res).msg("로그인 성공").build();
+        if (rDTO != null) {
+
+            // 세션이 없으면 새로 생성
+            HttpSession session = request.getSession(true);
+
+            // Spring Security가 인식할 Authentication 객체 생성
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    rDTO.email(), // principal (사용자 식별 정보, 여기서는 이메일)
+                    null, // crendentials (비밀번호, 인증 후에는 불필요)
+                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+            ); // authorities
+
+            // SecurityContext를 가져와 Authentication 객체 설정
+            SecurityContext securityContext = SecurityContextHolder.getContext();
+            securityContext.setAuthentication(authentication);
+
+            // 세션에 SecurityContext를 저장
+            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
+
+            MsgDTO dto = MsgDTO.builder().result(1).msg(rDTO.nickname() + " 님, 로그인되었습니다.").build();
+
             return ResponseEntity.ok(dto);
         } else {
-            MsgDTO dto = MsgDTO.builder().result(res).msg("이메일 또는 비밀번호가 일치하지 않습니다.").build();
+            MsgDTO dto = MsgDTO.builder().result(0).msg("이메일 또는 비밀번호가 일치하지 않습니다.").build();
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(dto);
         }
     }

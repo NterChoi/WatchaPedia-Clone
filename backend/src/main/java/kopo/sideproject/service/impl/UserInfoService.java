@@ -84,10 +84,8 @@ public class UserInfoService implements IUserInfoService {
     }
 
     @Override
-    public int getUserLogin(UserInfoDTO pDTO) throws Exception {
+    public UserInfoDTO getUserLogin(UserInfoDTO pDTO) throws Exception {
         log.info("{}.getUserLogin() start!",this.getClass().getName());
-
-        int res = 0;
 
         String email = pDTO.email();
         String password = pDTO.password();
@@ -97,12 +95,17 @@ public class UserInfoService implements IUserInfoService {
         Optional<UserInfoEntity> user =  userInfoRepository.findByEmail(email);
 
         if (user.isPresent()) {
-            String dbPassword = user.get().getPassword();
+            UserInfoEntity entity = user.get();
+            String dbPassword = entity.getPassword();
 
             // .matches()가 입력된 비밀번호와 DB의 암호화된 비밀번호를 비교
             if (passwordEncoder.matches(password, dbPassword)) {
-                res = 1;
-                log.info("User signup successfully for email: {}", email);
+                log.info("Login successful for email: {}", email);
+                // 성공 시, 사용자 정보를 DTO에 담아 반환
+                return UserInfoDTO.builder()
+                        .email(entity.getEmail())
+                        .nickname(entity.getNickname())
+                        .build();
             } else {
                 log.warn("password mismath for email: {}", email);
             }
@@ -112,6 +115,6 @@ public class UserInfoService implements IUserInfoService {
 
         log.info("{}.getUserLogin End!", this.getClass().getName());
 
-        return res;
+        return null;
     }
 }

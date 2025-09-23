@@ -7,8 +7,7 @@ function DetailPage() {
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    // 리뷰 폼 상태
-    const [userEmail, setUserEmail] = useState('');
+    // 리뷰 폼 상태 (userEmail 제거)
     const [rating, setRating] = useState(0);
     const [content, setContent] = useState('');
 
@@ -44,14 +43,14 @@ function DetailPage() {
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
 
-        // 간단한 유효성 검사
-        if (!userEmail || rating === 0 || !content) {
-            alert("이메일, 평점, 리뷰 내용을 모두 입력해주세요.");
+        // 간단한 유효성 검사 (userEmail 제거)
+        if (rating === 0 || !content) {
+            alert("평점, 리뷰 내용을 모두 입력해주세요.");
             return;
         }
 
+        // reviewData에서 email 제거
         const reviewData = {
-            email: userEmail,
             rating: parseFloat(rating),
             content: content
         };
@@ -69,9 +68,8 @@ function DetailPage() {
                 throw new Error('Failed to submit review');
             }
 
-            // 리뷰 등록 성공 후, 폼 초기화 및 리뷰 목록 다시 불러오기
+            // 리뷰 등록 성공 후, 폼 초기화 및 리뷰 목록 다시 불러오기 (setUserEmail 제거)
             alert("리뷰가 성공적으로 등록되었습니다.");
-            setUserEmail('');
             setRating(0);
             setContent('');
             fetchMovieData(); // 리뷰 목록을 새로고침하여 방금 등록한 리뷰를 포함시킴
@@ -107,20 +105,10 @@ function DetailPage() {
 
             <hr/>
 
-            {/* 리뷰 작성 폼 */}
+            {/* 리뷰 작성 폼 (이메일 필드 제거) */}
             <div style={{marginBottom: '40px'}}>
                 <h2>리뷰 작성하기</h2>
                 <form onSubmit={handleReviewSubmit}>
-                    <div style={{marginBottom: '10px'}}>
-                        <label>이메일: </label>
-                        <input
-                            type="email"
-                            value={userEmail}
-                            onChange={(e) => setUserEmail(e.target.value)}
-                            placeholder="user@example.com"
-                            required
-                        />
-                    </div>
                     <div style={{marginBottom: '10px'}}>
                         <label>평점: </label>
                         <input

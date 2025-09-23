@@ -53,14 +53,14 @@ public class ReviewService implements IReviewService {
 
     @Override
     @Transactional
-    public void postReview(Long movieId, ReviewRequestDTO reviewDTO) {
+    public void postReview(Long movieId, ReviewRequestDTO reviewDTO, String userEmail) {
         log.info(this.getClass().getSimpleName(), "postReview Start!");
 
         log.info("movie id: " + movieId + "review: " + reviewDTO.toString());
 
         MovieEntity movieEntity = movieRepository.findById(movieId).orElseThrow(() -> new IllegalArgumentException("Movie not found with id: " + movieId));
 
-        UserInfoEntity userInfoEntity = userInfoRepository.findByEmail(reviewDTO.email()).orElseThrow(() -> new IllegalArgumentException("User not found with email: " + reviewDTO.email()));
+        UserInfoEntity userInfoEntity = userInfoRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
 
 
         ReviewEntity reviewEntity = ReviewEntity.builder()

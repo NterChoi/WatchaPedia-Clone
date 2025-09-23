@@ -2,6 +2,7 @@ package kopo.sideproject.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,7 +26,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 // 모든 요청에 대해 접근 허용 (추후 API별로 권한 설정 필요)
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
+                        .requestMatchers("/", "/index.html","/static/**", "/*.js", "/*.json",  "/*.ico", "/*.png", "/*.svg", "/manifest.json", "/logo192.png", "/logo512.png").permitAll()
+                        .requestMatchers("/api/user/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "api/movies/**").permitAll()
+                        .anyRequest().authenticated()
                 );
 
         return http.build();

@@ -6,7 +6,6 @@ import lombok.Builder;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ReviewRequestDTO(
-        String email,
         Long movieId,
         Double rating,
         String content

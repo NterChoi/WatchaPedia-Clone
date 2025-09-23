@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.security.Principal;
 
 import java.util.List;
 
@@ -32,13 +33,17 @@ public class ReviewController {
     }
 
     @PostMapping("/movies/{movieId}/reviews")
-    public ResponseEntity<Void> postReview(@PathVariable("movieId") Long movieId, @RequestBody ReviewRequestDTO reviewDTO) {
+    public ResponseEntity<Void> postReview(@PathVariable("movieId") Long movieId, @RequestBody ReviewRequestDTO reviewDTO, Principal principal) {
         log.info(this.getClass().getSimpleName(), "postReview Start!");
+
+        // 2. Principal 객체에서 현재 로그인된 사용자의 이메일 가져오기
+        String userEmail = principal.getName();
 
         log.info("Requested movieId: " + movieId);
         log.info("Requested reviewDTO: " + reviewDTO);
+        log.info("User Email from Session: " + userEmail);
 
-        this.reviewService.postReview(movieId, reviewDTO);
+        this.reviewService.postReview(movieId, reviewDTO,  userEmail);
 
         log.info(this.getClass().getSimpleName(), "postReview End!");
 

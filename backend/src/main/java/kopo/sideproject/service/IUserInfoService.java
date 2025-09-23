@@ -21,7 +21,7 @@ public interface IUserInfoService {
     /**
      *  로그인을 위해 아이디와 비밀번호가 일치하는지 확인하기
      * @param pDTO 로그인을 위한 회원정보
-     * @return  로그인 성공 여부 (성공:1, 실패:0)
+     * @return  로그인에 성공한 회원 정보 (실패 시 null)
      */
-    int getUserLogin(UserInfoDTO pDTO) throws Exception;
+    UserInfoDTO getUserLogin(UserInfoDTO pDTO) throws Exception;
 }

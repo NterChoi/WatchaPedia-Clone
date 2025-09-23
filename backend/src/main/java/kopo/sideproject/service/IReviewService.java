@@ -9,7 +9,7 @@ public interface IReviewService {
 
     List<ReviewDTO> getReviewsForMovies(Long movieId);
 
-    void postReview(Long movieId, ReviewRequestDTO review);
+    void postReview(Long movieId, ReviewRequestDTO review, String userEmail);
 
     void updateReview(Long reviewId, ReviewRequestDTO review);
 
