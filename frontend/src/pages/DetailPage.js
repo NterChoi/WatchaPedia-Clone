@@ -1,6 +1,34 @@
 import React, {useState, useEffect} from 'react';
 import {useParams} from 'react-router-dom';
 
+// 별점 UI 컴포넌트
+const StarRating = ({rating, onRatingChange, readOnly = false}) => {
+    const [hoverRating, setHoverRating] = useState(0);
+    const stars = [1, 2, 3, 4, 5];
+
+    return (
+        <div>
+            {stars.map((star) => (
+                <span
+                    key={star}
+                    style={{
+                        cursor: readOnly ? 'default' : 'pointer',
+                        color: (hoverRating || rating) >= star ? 'gold' : 'gray',
+                        fontSize: '28px',
+                        marginRight: '2px',
+                    }}
+                    onMouseEnter={() => !readOnly && setHoverRating(star)}
+                    onMouseLeave={() => !readOnly && setHoverRating(0)}
+                    onClick={() => !readOnly && onRatingChange(star)}
+                >
+                    ★
+                </span>
+            ))}
+        </div>
+    );
+};
+
+
 function DetailPage() {
     const {movieId} = useParams();
     const [movie, setMovie] = useState(null);
@@ -22,7 +50,7 @@ function DetailPage() {
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
-                const res = await fetch('/api/user/me');
+                const res = await fetch('/api/me');
                 if (res.ok) {
                     const userData = await res.json();
                     setCurrentUser(userData);
@@ -195,20 +223,12 @@ function DetailPage() {
                     <h2>리뷰 작성하기</h2>
                     <form onSubmit={handleReviewSubmit}>
                         <div style={{marginBottom: '10px'}}>
-                            <label>평점: </label>
-                            <input
-                                type="number"
-                                step="0.5"
-                                min="0.5"
-                                max="5"
-                                value={rating}
-                                onChange={(e) => setRating(e.target.value)}
-                                required
-                            />
+                            <label style={{display: 'block', marginBottom: '5px'}}>평점: </label>
+                            <StarRating rating={rating} onRatingChange={setRating}/>
                         </div>
                         <div style={{marginBottom: '10px'}}>
                         <textarea
-                            style={{width: '100%', minHeight: '80px'}}
+                            style={{width: '100%', minHeight: '80px', marginTop: '10px'}}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="리뷰 내용을 작성해주세요."
@@ -228,18 +248,13 @@ function DetailPage() {
                 <h2>리뷰 목록</h2>
                 {reviews.length > 0 ? (
                     reviews.map(review => (
-                        <div key={review.reviewId} style={{border: '1px solid #ccc', padding: '10px', marginBottom: '10px'}}>
+                        <div key={review.reviewId} style={{border: '1px solid #ccc', padding: '15px', marginBottom: '10px', borderRadius: '5px'}}>
                             {editingReviewId === review.reviewId ? (
                                 // 수정 모드 UI
                                 <div>
-                                    <p><strong>작성자:</strong> {review.nickname}</p>
-                                    <div style={{marginBottom: '10px'}}>
-                                        <label>평점: </label>
-                                        <input
-                                            type="number" step="0.5" min="0.5" max="5"
-                                            value={editedRating}
-                                            onChange={(e) => setEditedRating(e.target.value)}
-                                        />
+                                    <p style={{fontWeight: 'bold'}}>{review.nickname}</p>
+                                    <div style={{margin: '10px 0'}}>
+                                        <StarRating rating={editedRating} onRatingChange={setEditedRating}/>
                                     </div>
                                     <textarea
                                         style={{width: '100%', minHeight: '80px'}}
@@ -254,9 +269,11 @@ function DetailPage() {
                             ) : (
                                 // 일반 모드 UI
                                 <div>
-                                    <p><strong>작성자:</strong> {review.nickname}</p>
-                                    <p><strong>평점:</strong> {review.rating}</p>
-                                    <p>{review.content}</p>
+                                    <p style={{fontWeight: 'bold'}}>{review.nickname}</p>
+                                    <div style={{margin: '5px 0'}}>
+                                        <StarRating rating={review.rating} readOnly={true}/>
+                                    </div>
+                                    <p style={{marginTop: '10px'}}>{review.content}</p>
                                     {currentUser && currentUser.email === review.email && (
                                         <div style={{marginTop: '10px'}}>
                                             <button style={{marginRight: '5px'}} onClick={() => handleEditClick(review)}>수정</button>
