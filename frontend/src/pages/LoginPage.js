@@ -2,8 +2,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-// LoginPage 컴포넌트 정의
-function LoginPage() {
+// LoginPage 컴포넌트 정의, App.js로부터 setCurrentUser 함수를 props로 받습니다.
+function LoginPage({ setCurrentUser }) {
     // 로그인 폼에 필요한 이메일, 비밀번호, 메시지, 에러 여부를 상태로 관리합니다.
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -18,7 +18,7 @@ function LoginPage() {
         setIsError(false);
 
         try {
-            // 이번에는 '/api/user/login' API를 호출합니다.
+            // '/api/user/login' API를 호출합니다.
             const response = await fetch('/api/user/login', {
                 method: 'POST',
                 headers: {
@@ -29,18 +29,11 @@ function LoginPage() {
 
             const data = await response.json();
 
-            // response.ok는 HTTP 상태 코드가 200-299 범위에 있는지 여부를 boolean으로 알려줍니다.
-            // 로그인은 성공 시 200(OK)을 반환하므로 response.ok로 성공 여부를 체크할 수 있습니다.
             if (response.ok) {
-                setIsError(false);
-                setMessage('로그인에 성공했습니다! 잠시 후 홈으로 이동합니다.');
-
-                // 실제 애플리케이션에서는 여기서 서버가 보내준 토큰을 저장하거나,
-                // 사용자 정보를 전역 상태(Recoil, Redux, Context API 등)에 저장하는 로직이 들어갑니다.
-
-                setTimeout(() => {
-                    navigate('/'); // 2초 후 홈 페이지로 이동
-                }, 2000);
+                // 로그인 성공 시, App.js의 상태를 업데이트합니다.
+                setCurrentUser(data);
+                // 성공 메시지 없이 바로 홈으로 이동합니다.
+                navigate('/');
             } else {
                 // 401(Unauthorized) 등 로그인 실패 시
                 setIsError(true);

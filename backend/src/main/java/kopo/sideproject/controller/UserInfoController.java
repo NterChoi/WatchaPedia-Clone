@@ -88,7 +88,7 @@ public class UserInfoController {
     }
 
     @PostMapping(value = "/login")
-    public ResponseEntity<MsgDTO> login(@RequestBody UserInfoDTO pDTO, HttpServletRequest request) throws Exception {
+    public ResponseEntity<UserInfoDTO> login(@RequestBody UserInfoDTO pDTO, HttpServletRequest request) throws Exception {
         log.info("{}.loginProc Start!", this.getClass().getName());
         log.info("pDTO: {}", pDTO);
 
@@ -118,12 +118,9 @@ public class UserInfoController {
             // 세션에 SecurityContext를 저장
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, securityContext);
 
-            MsgDTO dto = MsgDTO.builder().result(1).msg(rDTO.nickname() + " 님, 로그인되었습니다.").build();
-
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(rDTO);
         } else {
-            MsgDTO dto = MsgDTO.builder().result(0).msg("이메일 또는 비밀번호가 일치하지 않습니다.").build();
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(dto);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
 }
