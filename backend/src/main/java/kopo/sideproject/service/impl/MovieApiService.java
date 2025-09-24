@@ -1,5 +1,6 @@
 package kopo.sideproject.service.impl;
 
+import kopo.sideproject.dto.TmdbMovieDetailDTO;
 import kopo.sideproject.dto.TmdbResponseDTO;
 import kopo.sideproject.repository.MovieRepository;
 import kopo.sideproject.repository.entity.MovieEntity;
@@ -87,6 +88,17 @@ public class MovieApiService {
         return response;
     }
 
+    public TmdbResponseDTO getNowPlayingMoviesFromTMDB(int page) {
+        log.info(this.getClass().getName() + ".getNowPlayingMoviesFromTMDB Start!");
+
+        // Feign Client를 사용하여 TMDB API 호출
+        TmdbResponseDTO response = movieApiService.getNowPlayingMovies(page, "ko-KR");
+
+        log.info(this.getClass().getName() + ".getNowPlayingMoviesFromTMDB End!");
+
+        return response;
+    }
+
     public TmdbResponseDTO searchMovies(String query, int page) {
         log.info(this.getClass().getName() + ".searchMovies Start!");
 
@@ -95,5 +107,16 @@ public class MovieApiService {
         log.info(this.getClass().getName() + ".searchMovies End!");
 
         return responseDTO;
+    }
+
+    public TmdbMovieDetailDTO getMovieDetailsFromTMDB(Long tmdbId) {
+        log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB Start!");
+
+        // Feign Client를 사용하여 TMDB API에서 영화 상세 정보 호출
+        TmdbMovieDetailDTO rDTO = movieApiService.getMovieDetailsByTmdbId(tmdbId, "ko-KR");
+
+        log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB End!");
+
+        return rDTO;
     }
 }

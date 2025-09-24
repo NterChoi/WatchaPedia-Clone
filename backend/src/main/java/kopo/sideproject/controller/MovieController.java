@@ -1,5 +1,6 @@
 package kopo.sideproject.controller;
 
+import kopo.sideproject.dto.TmdbMovieDetailDTO;
 import kopo.sideproject.dto.TmdbResponseDTO;
 import kopo.sideproject.repository.entity.MovieEntity;
 import kopo.sideproject.service.IMovieApiService;
@@ -26,16 +27,16 @@ public class MovieController {
      * @return 영화 목록 JSON 데이터
      */
     @GetMapping("/now-playing")
-    public ResponseEntity<List<MovieEntity>> getNowPlaying() {
+    public ResponseEntity<TmdbResponseDTO> getNowPlaying(@RequestParam(defaultValue = "1") int page) {
 
         log.info(this.getClass().getName() + ".getNowPlayingMovies Start!");
 
         // 서비스 호출하여 영화 정보 받아오기
-        List<MovieEntity> movieList = movieApiService.getNowPlayingMovies();
+        TmdbResponseDTO nowPlayingMovies = movieApiService.getNowPlayingMoviesFromTMDB(page);
 
         log.info(this.getClass().getName() + ".getNowPlayingMovies End!");
 
-        return ResponseEntity.ok(movieList);
+        return ResponseEntity.ok(nowPlayingMovies);
     }
 
     @GetMapping("/{movieId}")
@@ -78,5 +79,19 @@ public class MovieController {
         log.info(this.getClass().getName() + ".searchMovies End!");
 
         return ResponseEntity.ok(searchMovies);
+    }
+
+    @GetMapping("/tmdb/{tmdbId}")
+    public ResponseEntity<TmdbMovieDetailDTO> getMovieDetailsFromTMDB(@PathVariable("tmdbId") Long tmdbId) {
+        log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB Start!");
+        log.info("Requested tmdbId: " + tmdbId);
+
+        TmdbMovieDetailDTO rDTO = movieApiService.getMovieDetailsFromTMDB(tmdbId);
+
+        if (rDTO != null) {
+            return ResponseEntity.ok(rDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

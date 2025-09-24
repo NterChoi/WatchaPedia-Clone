@@ -16,6 +16,7 @@ public record TmdbResponseDTO(
 ) {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record MovieResultDto(
+            Long id,
             String title,
             String overview,
             @JsonProperty("poster_path") String posterPath,
