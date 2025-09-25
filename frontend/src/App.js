@@ -1,103 +1,127 @@
-  import React, { useState, useEffect } from 'react';
-  import { Routes, Route, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Routes, Route, Link, useNavigate } from 'react-router-dom';
 
-  // 각 페이지를 구성하는 컴포넌트들을 가져옵니다.
-  import HomePage from './pages/HomePage';
-  import DetailPage from './pages/DetailPage';
-  import LoginPage from './pages/LoginPage';
-  import SignupPage from './pages/SignupPage';
+// 페이지 컴포넌트들을 가져옵니다.
+import HomePage from './pages/HomePage';
+import DetailPage from './pages/DetailPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import SearchPage from './pages/SearchPage'; // 검색 페이지를 새로 import 합니다.
 
-  // CSS 스타일을 적용하기 위해 App.css 파일을 가져옵니다.
-  import './App.css';
+import './App.css';
 
-  // App 컴포넌트는 우리 애플리케이션의 최상위 컴포넌트입니다.
-  function App() {
-      const [currentUser, setCurrentUser] = useState(null);
-      const navigate = useNavigate();
+function App() {
+    const [currentUser, setCurrentUser] = useState(null);
+    const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
+    const navigate = useNavigate();
 
-      // 컴포넌트가 처음 렌더링될 때 로그인한 사용자 정보를 가져옵니다.
-      useEffect(() => {
-          const fetchCurrentUser = async () => {
-              try {
-                  const res = await fetch('/api/me');
-                  if (res.ok) {
-                      const userData = await res.json();
-                      setCurrentUser(userData);
-                  } else {
-                      setCurrentUser(null);
-                  }
-              } catch (error) {
-                  console.error("Failed to fetch user data:", error);
-                  setCurrentUser(null);
-              }
-          };
+    // 로그인 사용자 정보 가져오기 (기존과 동일)
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+            try {
+                const res = await fetch('/api/me');
+                if (res.ok) {
+                    const userData = await res.json();
+                    setCurrentUser(userData);
+                } else {
+                    setCurrentUser(null);
+                }
+            } catch (error) {
+                console.error("Failed to fetch user data:", error);
+                setCurrentUser(null);
+            }
+        };
+        fetchCurrentUser();
+    }, []);
 
-          fetchCurrentUser();
-      }, []);
+    // 로그아웃 처리 함수 (기존과 동일)
+    const handleLogout = async () => {
+        try {
+            const response = await fetch('/logout', { method: 'POST' });
+            if (response.ok) {
+                alert('로그아웃 되었습니다.');
+                setCurrentUser(null);
+                navigate('/');
+            } else {
+                throw new Error('Logout failed');
+            }
+        } catch (error) {
+            console.error("Logout error:", error);
+            alert('로그아웃에 실패했습니다.');
+        }
+    };
 
-      // 로그아웃 처리 함수
-      const handleLogout = async () => {
-          try {
-              const response = await fetch('/logout', {
-                  method: 'POST',
-              });
+    // 검색 실행 함수
+    const handleSearchSubmit = (e) => {
+        e.preventDefault(); // form의 기본 새로고침 동작 방지
+        if (!searchQuery.trim()) {
+            alert('검색어를 입력해주세요.');
+            return;
+        }
+        // 쿼리 파라미터를 포함하여 검색 페이지로 이동
+        navigate(`/search?query=${searchQuery}`);
+    };
 
-              if (response.ok) {
-                  alert('로그아웃 되었습니다.');
-                  setCurrentUser(null); // 사용자 상태 초기화
-                  navigate('/'); // 홈페이지로 이동
-              } else {
-                  throw new Error('Logout failed');
-              }
-          } catch (error) {
-              console.error("Logout error:", error);
-              alert('로그아웃에 실패했습니다.');
-          }
-      };
+    return (
+        <div className="App">
+            <nav style={{ padding: '20px', backgroundColor: '#20232a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {/* 좌측 메뉴 (홈 버튼) */}
+                <div>
+                    <Link to="/" style={{ color: 'white', textDecoration: 'none', marginRight: '20px', fontSize: '18px' }}>
+                        홈
+                    </Link>
+                </div>
 
-      return (
-          <div className="App">
-              {/* 상단 네비게이션 메뉴 부분입니다. */}
-              <nav style={{ padding: '20px', backgroundColor: '#20232a', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                      <Link to="/" style={{ color: 'white', textDecoration: 'none', marginRight: '20px', fontSize: '18px' }}>
-                          홈
-                      </Link>
-                  </div>
-                  <div>
-                      {currentUser ? (
-                          <>
-                              <span style={{ color: 'white', marginRight: '20px' }}>{currentUser.nickname}님 환영합니다!</span>
-                              <button onClick={handleLogout} style={{ color: 'white', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
-                                  로그아웃
-                              </button>
-                          </>
-                      ) : (
-                          <>
-                              <Link to="/login" style={{ color: 'white', textDecoration: 'none', marginRight: '20px', fontSize: '18px' }}>
-                                  로그인
-                              </Link>
-                              <Link to="/signup" style={{ color: 'white', textDecoration: 'none', fontSize: '18px' }}>
-                                  회원가입
-                              </Link>
-                          </>
-                      )}
-                  </div>
-              </nav>
+                {/* 중앙 검색창 */}
+                <div style={{ flexGrow: 1, maxWidth: '400px' }}>
+                    <form onSubmit={handleSearchSubmit} style={{ display: 'flex' }}>
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="영화 제목을 검색해보세요"
+                            style={{ width: '100%', padding: '8px', borderRadius: '4px', border: 'none' }}
+                        />
+                        <button type="submit" style={{ padding: '8px 12px', marginLeft: '5px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+                            검색
+                        </button>
+                    </form>
+                </div>
 
-              {/* 페이지의 메인 콘텐츠가 표시될 부분입니다. */}
-              <main>
-                  <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/movie/:movieId" element={<DetailPage />} />
-                      {/* 로그인 페이지에 setCurrentUser 함수를 props로 전달하여 로그인 성공 시 상태를 업데이트할 수 있도록 합니다. */}
-                      <Route path="/login" element={<LoginPage setCurrentUser={setCurrentUser} />} />
-                      <Route path="/signup" element={<SignupPage />} />
-                  </Routes>
-              </main>
-          </div>
-      );
-  }
+                {/* 우측 메뉴 (로그인/회원가입 또는 사용자 정보) */}
+                <div>
+                    {currentUser ? (
+                        <>
+                            <span style={{ color: 'white', marginRight: '20px' }}>{currentUser.nickname}님 환영합니다!</span>
+                            <button onClick={handleLogout} style={{ color: 'white', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
+                                로그아웃
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" style={{ color: 'white', textDecoration: 'none', marginRight: '20px', fontSize: '18px' }}>
+                                로그인
+                            </Link>
+                            <Link to="/signup" style={{ color: 'white', textDecoration: 'none', fontSize: '18px' }}>
+                                회원가입
+                            </Link>
+                        </>
+                    )}
+                </div>
+            </nav>
 
-  // 다른 파일에서 App 컴포넌트를 사용할 수 있도록 내보냅니다.
-  export default App;
+            <main>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/movie/:movieId" element={<DetailPage />} />
+                    <Route path="/login" element={<LoginPage setCurrentUser={setCurrentUser} />} />
+                    <Route path="/signup" element={<SignupPage />} />
+                    {/* 검색 페이지 라우트 추가 */}
+                    <Route path="/search" element={<SearchPage />} />
+                </Routes>
+            </main>
+        </div>
+    );
+}
+
+export default App;
