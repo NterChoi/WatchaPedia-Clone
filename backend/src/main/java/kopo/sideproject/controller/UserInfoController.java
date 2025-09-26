@@ -123,4 +123,19 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserInfoDTO> getUserInfo(@PathVariable("userId") Long userId) throws Exception {
+        log.info("{}.getUserInfo Start!", this.getClass().getName());
+        log.info("userId: {}", userId);
+
+        UserInfoDTO rDTO = userInfoService.getUserInfoById(userId);
+
+        if (rDTO != null) {
+            return ResponseEntity.ok(rDTO);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
+
+    }
 }

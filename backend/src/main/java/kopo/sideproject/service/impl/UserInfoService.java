@@ -134,4 +134,20 @@ public class UserInfoService implements IUserInfoService {
 
         return null;
     }
+
+    @Override
+    public UserInfoDTO getUserInfoById(Long id) throws Exception {
+        log.info("{}.getUserInfoById() start!",this.getClass().getName());
+        log.info("id : {}", id);
+
+        UserInfoEntity userInfoEntity = userInfoRepository.findById(id).orElse(null);
+
+        if (userInfoEntity != null) {
+            return UserInfoDTO.builder()
+                    .email(userInfoEntity.getEmail())
+                    .nickname(userInfoEntity.getNickname())
+                    .build();
+        }
+        return null;
+    }
 }

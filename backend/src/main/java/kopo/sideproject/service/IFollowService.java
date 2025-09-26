@@ -1,5 +1,6 @@
 package kopo.sideproject.service;
 
+import kopo.sideproject.dto.FollowDTO;
 import kopo.sideproject.repository.entity.FollowEntity;
 
 import java.util.List;

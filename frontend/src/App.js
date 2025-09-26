@@ -6,16 +6,17 @@ import HomePage from './pages/HomePage';
 import DetailPage from './pages/DetailPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
-import SearchPage from './pages/SearchPage'; // 검색 페이지를 새로 import 합니다.
+import SearchPage from './pages/SearchPage';
+import UserProfilePage from './pages/UserProfilePage'; // 프로필 페이지 import
 
 import './App.css';
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
-    const [searchQuery, setSearchQuery] = useState(''); // 검색어 상태 추가
+    const [searchQuery, setSearchQuery] = useState('');
     const navigate = useNavigate();
 
-    // 로그인 사용자 정보 가져오기 (기존과 동일)
+    // 로그인 사용자 정보 가져오기
     useEffect(() => {
         const fetchCurrentUser = async () => {
             try {
@@ -34,7 +35,7 @@ function App() {
         fetchCurrentUser();
     }, []);
 
-    // 로그아웃 처리 함수 (기존과 동일)
+    // 로그아웃 처리 함수
     const handleLogout = async () => {
         try {
             const response = await fetch('/logout', { method: 'POST' });
@@ -53,12 +54,11 @@ function App() {
 
     // 검색 실행 함수
     const handleSearchSubmit = (e) => {
-        e.preventDefault(); // form의 기본 새로고침 동작 방지
+        e.preventDefault();
         if (!searchQuery.trim()) {
             alert('검색어를 입력해주세요.');
             return;
         }
-        // 쿼리 파라미터를 포함하여 검색 페이지로 이동
         navigate(`/search?query=${searchQuery}`);
     };
 
@@ -116,8 +116,9 @@ function App() {
                     <Route path="/movie/:movieId" element={<DetailPage />} />
                     <Route path="/login" element={<LoginPage setCurrentUser={setCurrentUser} />} />
                     <Route path="/signup" element={<SignupPage />} />
-                    {/* 검색 페이지 라우트 추가 */}
                     <Route path="/search" element={<SearchPage />} />
+                    {/* 사용자 프로필 페이지 라우트 추가 */}
+                    <Route path="/user/:userId" element={<UserProfilePage />} />
                 </Routes>
             </main>
         </div>

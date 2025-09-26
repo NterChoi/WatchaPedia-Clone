@@ -7,7 +7,7 @@ import lombok.Builder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record FollowDTO(
         // 팔로워 / 팔로잉 목록에서 사용자 정보를 나타낼 때 사용
-        Long userId,
+        String email,
         String nickname,
 
         // 팔로우 수 조회 결과를 담을 때 사용

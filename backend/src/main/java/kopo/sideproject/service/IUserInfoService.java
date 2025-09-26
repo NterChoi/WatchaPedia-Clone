@@ -26,4 +26,6 @@ public interface IUserInfoService {
     UserInfoDTO getUserLogin(UserInfoDTO pDTO) throws Exception;
 
     UserInfoDTO getUserInfo(String email) throws Exception;
+
+    UserInfoDTO getUserInfoById(Long id) throws Exception;
 }
