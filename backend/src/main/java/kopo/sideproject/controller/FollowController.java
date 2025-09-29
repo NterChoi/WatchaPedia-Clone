@@ -40,7 +40,7 @@ public class FollowController {
     }
 
     // 특정 유저의 팔로잉 목록 조회
-    @GetMapping("/users/{userId}following")
+    @GetMapping("/users/{userId}/following")
     public ResponseEntity<List<FollowDTO>> getFollowing(@PathVariable("userId") Long userId) {
         List<FollowDTO> following = followService.getFollowingList(userId);
         return ResponseEntity.ok(following);

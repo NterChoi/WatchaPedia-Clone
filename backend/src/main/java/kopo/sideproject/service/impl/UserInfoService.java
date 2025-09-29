@@ -103,6 +103,7 @@ public class UserInfoService implements IUserInfoService {
                 log.info("Login successful for email: {}", email);
                 // 성공 시, 사용자 정보를 DTO에 담아 반환
                 return UserInfoDTO.builder()
+                        .id(entity.getId())
                         .email(entity.getEmail())
                         .nickname(entity.getNickname())
                         .build();
@@ -127,6 +128,7 @@ public class UserInfoService implements IUserInfoService {
 
         if (userInfoEntity != null) {
             return UserInfoDTO.builder()
+                    .id(userInfoEntity.getId())
                     .email(userInfoEntity.getEmail())
                     .nickname(userInfoEntity.getNickname())
                     .build();
@@ -144,6 +146,7 @@ public class UserInfoService implements IUserInfoService {
 
         if (userInfoEntity != null) {
             return UserInfoDTO.builder()
+                    .id(userInfoEntity.getId())
                     .email(userInfoEntity.getEmail())
                     .nickname(userInfoEntity.getNickname())
                     .build();

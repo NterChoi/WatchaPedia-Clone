@@ -92,7 +92,9 @@ function App() {
                 <div>
                     {currentUser ? (
                         <>
-                            <span style={{ color: 'white', marginRight: '20px' }}>{currentUser.nickname}님 환영합니다!</span>
+                            <Link to={`/user/${currentUser.id}`} style={{ color: 'white', textDecoration: 'none', marginRight: '20px' }}>
+                                <span style={{ color: 'white', marginRight: '20px' }}>{currentUser.nickname}님 환영합니다!</span>
+                            </Link>
                             <button onClick={handleLogout} style={{ color: 'white', background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>
                                 로그아웃
                             </button>
