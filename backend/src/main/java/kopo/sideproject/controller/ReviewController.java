@@ -110,4 +110,16 @@ public class ReviewController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+    @GetMapping("/user/{userId}/reviews")
+    public ResponseEntity<List<ReviewDTO>> getReviewsByUserId(@PathVariable("userId") Long userId) {
+        log.info(this.getClass().getSimpleName(), "getReviewsByUserId Start!");
+        log.info("userId: " + userId);
+
+        List<ReviewDTO> dtoList = reviewService.getReviewByUserId(userId);
+
+        log.info(this.getClass().getSimpleName(), "getReviewsByUserId End!");
+
+        return ResponseEntity.ok(dtoList);
+    }
 }

@@ -14,4 +14,6 @@ public interface IReviewService {
     void updateReview(Long reviewId, ReviewRequestDTO review, String userEmail);
 
     void deleteReview(Long reviewId, String userEmail);
+
+    List<ReviewDTO> getReviewByUserId(Long userId);
 }

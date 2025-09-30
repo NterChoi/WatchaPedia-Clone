@@ -118,4 +118,24 @@ public class ReviewService implements IReviewService {
 
         log.info(this.getClass().getSimpleName(), "deleteReview End!");
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReviewDTO> getReviewByUserId(Long userId) {
+        log.info(this.getClass().getSimpleName(), "getReviewByUserId Start!");
+        log.info("userId: " + userId);
+
+        // Repository에서 JOIN FETCH로 구현한 쿼리 호출
+        List<ReviewEntity> reviewEntities = reviewRepository.findAllByUserId(userId);
+
+        // Entity 리스트를 DTO 리스트로 변환
+        List<ReviewDTO> dtoList = reviewEntities.stream()
+                .map(ReviewDTO::fromEntity)
+                .toList();
+
+        log.info("Found {} reviews for user {}", dtoList.size(), userId);
+        log.info(this.getClass().getSimpleName(), "getReviewByUserId End!");
+
+        return dtoList;
+    }
 }

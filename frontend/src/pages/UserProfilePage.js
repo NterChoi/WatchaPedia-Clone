@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 
 function UserProfilePage() {
     const { userId } = useParams(); // URL에서 사용자 ID를 가져옵니다.
@@ -12,7 +12,8 @@ function UserProfilePage() {
     const [loading, setLoading] = useState(true);
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
-    const [view, setView] = useState(null); // 'followers' 또는 'following'
+    const [ratedMovies, setRatedMovies] = useState([]);
+    const [view, setView] = useState(null); // 'followers', 'following', 'ratings'
     const [selectedFile, setSelectedFile] = useState(null);
     const [preview, setPreview] = useState(null);
 
@@ -25,13 +26,14 @@ function UserProfilePage() {
             const meData = meRes.ok ? await meRes.json() : null;
             setLoggedInUser(meData);
 
-            // 2. 프로필 페이지의 사용자 정보, 팔로우 수, 팔로우 상태, 팔로워/팔로잉 리스트를 동시에 가져오기
-            const [profileRes, countsRes, isFollowingRes, followersRes, followingRes] = await Promise.all([
+            // 2. 프로필 페이지의 모든 정보를 동시에 가져오기
+            const [profileRes, countsRes, isFollowingRes, followersRes, followingRes, ratedMoviesRes] = await Promise.all([
                 fetch(`/api/user/${userId}`),
                 fetch(`/api/users/${userId}/follow-counts`),
                 fetch(`/api/users/${userId}/is-following`),
                 fetch(`/api/users/${userId}/followers`),
-                fetch(`/api/users/${userId}/following`)
+                fetch(`/api/users/${userId}/following`),
+                fetch(`/api/user/${userId}/reviews`) // 평가한 영화 목록 API 호출 추가
             ]);
 
             if (!profileRes.ok) throw new Error("사용자를 찾을 수 없습니다.");
@@ -41,13 +43,14 @@ function UserProfilePage() {
             const isFollowingData = await isFollowingRes.json();
             const followersData = await followersRes.json();
             const followingData = await followingRes.json();
-
+            const ratedMoviesData = await ratedMoviesRes.json(); // 결과 json으로 변환
 
             setProfileUser(profileData);
             setFollowCounts(countsData);
             setIsFollowing(isFollowingData.isFollowing);
             setFollowers(followersData);
             setFollowing(followingData);
+            setRatedMovies(ratedMoviesData); // state에 저장
             setView(null); // userId 변경 시 목록 숨기기
 
         } catch (error) {
@@ -69,10 +72,7 @@ function UserProfilePage() {
         try {
             const response = await fetch(`/api/follow/${userId}`, { method: 'POST' });
             if (response.ok) {
-                // UI 즉시 업데이트
-                setIsFollowing(true);
-                setFollowCounts(prev => ({ ...prev, followerCount: prev.followerCount + 1 }));
-                fetchData(); // 팔로우 후 전체 데이터 다시 로드
+                fetchData(); // 데이터 다시 로드
             } else {
                 throw new Error('팔로우 실패');
             }
@@ -87,10 +87,7 @@ function UserProfilePage() {
         try {
             const response = await fetch(`/api/unfollow/${userId}`, { method: 'DELETE' });
             if (response.ok) {
-                // UI 즉시 업데이트
-                setIsFollowing(false);
-                setFollowCounts(prev => ({ ...prev, followerCount: prev.followerCount - 1 }));
-                fetchData(); // 언팔로우 후 전체 데이터 다시 로드
+                fetchData(); // 데이터 다시 로드
             } else {
                 throw new Error('언팔로우 실패');
             }
@@ -109,7 +106,6 @@ function UserProfilePage() {
         const file = e.target.files[0];
         if (file) {
             setSelectedFile(file);
-            // 파일 미리보기 생성
             const reader = new FileReader();
             reader.onloadend = () => {
                 setPreview(reader.result);
@@ -136,10 +132,9 @@ function UserProfilePage() {
 
             if (response.ok) {
                 alert("프로필 이미지가 변경되었습니다.");
-                // 상태 초기화 및 데이터 다시 로드
                 setSelectedFile(null);
                 setPreview(null);
-                fetchData(); // 프로필 정보를 다시 불러와 새 이미지 표시
+                fetchData();
             } else {
                 const errorData = await response.json();
                 throw new Error(errorData.msg || "이미지 업로드에 실패했습니다.");
@@ -167,8 +162,8 @@ function UserProfilePage() {
             {/* 프로필 이미지 */}
             <div style={{ marginBottom: '20px' }}>
                 <img
-                    src={preview || profileUser.profileImg || '/images/default_profile.png'}
-                    alt={`${profileUser.nickname}의 프로필`}
+                    src={preview || (profileUser && profileUser.profileImg) || '/images/default_profile.png'}
+                    alt={`${profileUser ? profileUser.nickname : ''}의 프로필`}
                     style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }}
                 />
             </div>
@@ -176,13 +171,16 @@ function UserProfilePage() {
             {/* 닉네임 */}
             <h1 style={{ textAlign: 'center' }}>{profileUser.nickname}님의 프로필</h1>
 
-            {/* 팔로우/팔로잉 정보 */}
+            {/* 탭 버튼 */}
             <div style={{ margin: '20px 0' }}>
-                <button onClick={() => setView('followers')} style={{ all: 'unset', cursor: 'pointer' }}>
+                <button onClick={() => setView('followers')} style={{ all: 'unset', cursor: 'pointer', marginRight: '20px' }}>
                     팔로워: {followCounts.followerCount}
                 </button>
-                <button onClick={() => setView('following')} style={{ all: 'unset', cursor: 'pointer', marginLeft: '20px' }}>
+                <button onClick={() => setView('following')} style={{ all: 'unset', cursor: 'pointer', marginRight: '20px' }}>
                     팔로잉: {followCounts.followingCount}
+                </button>
+                <button onClick={() => setView('ratings')} style={{ all: 'unset', cursor: 'pointer' }}>
+                    평가한 영화: {ratedMovies.length}
                 </button>
             </div>
 
@@ -213,22 +211,53 @@ function UserProfilePage() {
                 )
             )}
 
-            {/* 팔로워/팔로잉 리스트 */}
-            {view && (
-                <div style={{ width: '100%', maxWidth: '300px', marginTop: '20px' }}>
-                    <h2>{view === 'followers' ? '팔로워' : '팔로잉'}</h2>
-                    <ul style={{ listStyle: 'none', padding: 0 }}>
-                        {(view === 'followers' ? followers : following).length > 0 ? (
-                            (view === 'followers' ? followers : following).map(user => (
+            {/* 팔로워/팔로잉/평가한 영화 목록 */}
+            <div style={{ width: '100%', maxWidth: '800px', marginTop: '20px' }}>
+                {view === 'followers' && (
+                    <div>
+                        <h2>팔로워</h2>
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                            {followers.map(user => (
                                 <li key={user.userId} onClick={() => handleUserClick(user.userId)} style={{ cursor: 'pointer', padding: '8px 0', borderBottom: '1px solid #eee' }}>
                                     <img src={user.profileImg || '/images/default_profile.png'} alt={user.nickname} style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} />
                                     {user.nickname}
                                 </li>
-                            ))
-                        ) : <p>{view === 'followers' ? '팔로워가 없습니다.' : '팔로잉하는 사용자가 없습니다.'}</p>}
-                    </ul>
-                </div>
-            )}
+                            ))}
+                        </ul>
+                    </div>
+                )}
+                {view === 'following' && (
+                    <div>
+                        <h2>팔로잉</h2>
+                        <ul style={{ listStyle: 'none', padding: 0 }}>
+                            {following.map(user => (
+                                <li key={user.userId} onClick={() => handleUserClick(user.userId)} style={{ cursor: 'pointer', padding: '8px 0', borderBottom: '1px solid #eee' }}>
+                                    <img src={user.profileImg || '/images/default_profile.png'} alt={user.nickname} style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} />
+                                    {user.nickname}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+                {view === 'ratings' && (
+                    <div>
+                        <h2>평가한 영화</h2>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                            {ratedMovies.length > 0 ? (
+                                ratedMovies.map(review => (
+                                    <div key={review.reviewId} style={{ margin: '10px', width: '180px', textAlign: 'center' }}>
+                                        <Link to={`/movie/${review.movieId}`}>
+                                            <img src={`https://image.tmdb.org/t/p/w500${review.posterPath}`} alt={review.title} style={{ width: '100%', borderRadius: '8px' }} />
+                                        </Link>
+                                        <h4 style={{ marginTop: '8px', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{review.title}</h4>
+                                        <p style={{ margin: 0, color: '#f5c518' }}>★ {review.rating.toFixed(1)}</p>
+                                    </div>
+                                ))
+                            ) : <p>평가한 영화가 없습니다.</p>}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

@@ -12,6 +12,8 @@ public record ReviewDTO(
         String email,
         String nickname,
         Long movieId,
+        String title,
+        String posterPath,
         Double rating,
         String content
 
@@ -24,6 +26,8 @@ public record ReviewDTO(
                 .email(entity.getUser().getEmail())
                 .nickname(entity.getUser().getNickname())
                 .movieId(entity.getMovie().getMovieId())
+                .title(entity.getMovie().getMovieTitle())
+                .posterPath(entity.getMovie().getPosterUrl())
                 .rating(entity.getRating())
                 .content(entity.getContent())
                 .build();
