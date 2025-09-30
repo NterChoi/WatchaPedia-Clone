@@ -13,6 +13,8 @@ function UserProfilePage() {
     const [followers, setFollowers] = useState([]);
     const [following, setFollowing] = useState([]);
     const [view, setView] = useState(null); // 'followers' 또는 'following'
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [preview, setPreview] = useState(null);
 
     // 데이터 가져오는 함수
     const fetchData = async () => {
@@ -102,6 +104,52 @@ function UserProfilePage() {
         navigate(`/user/${id}`);
     };
 
+    // 파일 선택 시 호출될 핸들러
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            // 파일 미리보기 생성
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // 이미지 업로드 핸들러
+    const handleImageUpload = async () => {
+        if (!selectedFile) {
+            alert("파일을 선택해주세요.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        try {
+            const response = await fetch(`/api/user/${userId}/profile-image`, {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                alert("프로필 이미지가 변경되었습니다.");
+                // 상태 초기화 및 데이터 다시 로드
+                setSelectedFile(null);
+                setPreview(null);
+                fetchData(); // 프로필 정보를 다시 불러와 새 이미지 표시
+            } else {
+                const errorData = await response.json();
+                throw new Error(errorData.msg || "이미지 업로드에 실패했습니다.");
+            }
+        } catch (error) {
+            console.error("이미지 업로드 오류:", error);
+            alert(error.message);
+        }
+    };
+
 
     if (loading) {
         return <div>로딩 중...</div>;
@@ -115,8 +163,20 @@ function UserProfilePage() {
     const isMyProfile = loggedInUser && loggedInUser.id === profileUser.id;
 
     return (
-        <div style={{ padding: '40px' }}>
-            <h1>{profileUser.nickname}님의 프로필</h1>
+        <div style={{ padding: '40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* 프로필 이미지 */}
+            <div style={{ marginBottom: '20px' }}>
+                <img
+                    src={preview || profileUser.profileImg || '/images/default_profile.png'}
+                    alt={`${profileUser.nickname}의 프로필`}
+                    style={{ width: '150px', height: '150px', borderRadius: '50%', objectFit: 'cover' }}
+                />
+            </div>
+
+            {/* 닉네임 */}
+            <h1 style={{ textAlign: 'center' }}>{profileUser.nickname}님의 프로필</h1>
+
+            {/* 팔로우/팔로잉 정보 */}
             <div style={{ margin: '20px 0' }}>
                 <button onClick={() => setView('followers')} style={{ all: 'unset', cursor: 'pointer' }}>
                     팔로워: {followCounts.followerCount}
@@ -126,7 +186,25 @@ function UserProfilePage() {
                 </button>
             </div>
 
-            {/* 본인 프로필이 아닐 때만 팔로우/언팔로우 버튼 표시 */}
+            {/* 이미지 수정 UI (본인 프로필일 때만) */}
+            {isMyProfile && (
+                <div style={{ margin: '20px 0', border: '1px solid #ccc', padding: '15px', borderRadius: '8px' }}>
+                    <label htmlFor="profile-upload" style={{ cursor: 'pointer', padding: '8px 12px', backgroundColor: '#f0f0f0', borderRadius: '4px' }}>
+                        이미지 선택
+                    </label>
+                    <input
+                        id="profile-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
+                    />
+                    {selectedFile && <span style={{ marginLeft: '10px' }}>{selectedFile.name}</span>}
+                    {preview && <button onClick={handleImageUpload} style={{ marginLeft: '10px' }}>이미지 변경</button>}
+                </div>
+            )}
+
+            {/* 팔로우/언팔로우 버튼 (타인 프로필일 때만) */}
             {!isMyProfile && loggedInUser && (
                 isFollowing ? (
                     <button onClick={handleUnfollow}>언팔로우</button>
@@ -135,34 +213,20 @@ function UserProfilePage() {
                 )
             )}
 
-            {/* 팔로워 또는 팔로잉 리스트 표시 */}
-            {view === 'followers' && (
-                <div>
-                    <h2>팔로워</h2>
-                    {followers.length > 0 ? (
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {followers.map(user => (
-                                <li key={user.userId} onClick={() => handleUserClick(user.userId)} style={{ cursor: 'pointer', padding: '5px 0' }}>
+            {/* 팔로워/팔로잉 리스트 */}
+            {view && (
+                <div style={{ width: '100%', maxWidth: '300px', marginTop: '20px' }}>
+                    <h2>{view === 'followers' ? '팔로워' : '팔로잉'}</h2>
+                    <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {(view === 'followers' ? followers : following).length > 0 ? (
+                            (view === 'followers' ? followers : following).map(user => (
+                                <li key={user.userId} onClick={() => handleUserClick(user.userId)} style={{ cursor: 'pointer', padding: '8px 0', borderBottom: '1px solid #eee' }}>
+                                    <img src={user.profileImg || '/images/default_profile.png'} alt={user.nickname} style={{ width: '30px', height: '30px', borderRadius: '50%', marginRight: '10px' }} />
                                     {user.nickname}
                                 </li>
-                            ))}
-                        </ul>
-                    ) : <p>팔로워가 없습니다.</p>}
-                </div>
-            )}
-
-            {view === 'following' && (
-                <div>
-                    <h2>팔로잉</h2>
-                    {following.length > 0 ? (
-                        <ul style={{ listStyle: 'none', padding: 0 }}>
-                            {following.map(user => (
-                                <li key={user.userId} onClick={() => handleUserClick(user.userId)} style={{ cursor: 'pointer', padding: '5px 0' }}>
-                                    {user.nickname}
-                                </li>
-                            ))}
-                        </ul>
-                    ) : <p>팔로잉하는 사용자가 없습니다.</p>}
+                            ))
+                        ) : <p>{view === 'followers' ? '팔로워가 없습니다.' : '팔로잉하는 사용자가 없습니다.'}</p>}
+                    </ul>
                 </div>
             )}
         </div>

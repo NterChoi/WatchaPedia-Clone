@@ -31,6 +31,9 @@ public class UserInfoEntity {
     @Column(name = "nickname", nullable = false)
     private String nickname;
 
+    @Column(name = "profile_img")
+    private String profileImg;
+
     @Column(name = "reg_dt", updatable = false)
     private String regDt;
 }

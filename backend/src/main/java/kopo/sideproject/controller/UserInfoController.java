@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Collections;
 
@@ -137,5 +138,23 @@ public class UserInfoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
 
+    }
+
+    @PostMapping("/{userId}/profile-imgae")
+    public ResponseEntity<MsgDTO> updateProfileImage(@PathVariable("userId") Long userId,
+                                                     @RequestParam("file") MultipartFile profileImage) throws Exception {
+        log.info("{}.updateProfileImage Start!", this.getClass().getName());
+        log.info("userId: {}", userId);
+        log.info("profileImage: {}", profileImage);
+
+        try {
+            userInfoService.updateProfileImage(userId, profileImage);
+            MsgDTO response = MsgDTO.builder().msg("프로필 이미지가 성공적으로 변경되었습니다.").build();
+            return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        log.error("Error updating profile image!", e);
+            MsgDTO response = MsgDTO.builder().msg("이미지 변경 중 오류가 발생했습니다: " + e.getMessage()).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 }

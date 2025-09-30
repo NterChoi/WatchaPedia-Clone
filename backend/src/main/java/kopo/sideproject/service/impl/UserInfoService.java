@@ -10,7 +10,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.Optional;
 
 @Slf4j
@@ -62,6 +65,7 @@ public class UserInfoService implements IUserInfoService {
                     .email(pDTO.email())
                     .password(passwordEncoder.encode(pDTO.password())) // BCrypt로 비밀번호 암호화
                     .nickname(pDTO.nickname())
+                    .profileImg("/images/default_profile.png")
                     .regDt(DateUtil.getDateTime("yyyy-MM-dd hh:mm:ss"))
                     .build();
 
@@ -131,6 +135,7 @@ public class UserInfoService implements IUserInfoService {
                     .id(userInfoEntity.getId())
                     .email(userInfoEntity.getEmail())
                     .nickname(userInfoEntity.getNickname())
+                    .profileImg(userInfoEntity.getProfileImg())
                     .build();
         }
 
@@ -149,8 +154,66 @@ public class UserInfoService implements IUserInfoService {
                     .id(userInfoEntity.getId())
                     .email(userInfoEntity.getEmail())
                     .nickname(userInfoEntity.getNickname())
+                    .profileImg(userInfoEntity.getProfileImg())
                     .build();
         }
         return null;
+    }
+
+    @Override
+    @Transactional
+    public void updateProfileImage(Long userId, MultipartFile profileImage) throws Exception {
+        log.info("{}.updateProfileImage() start!",this.getClass().getName());
+        log.info("id : {}", userId);
+
+        // 1. 사용자 정보 조회
+        UserInfoEntity userEntity = userInfoRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found! " + userId));
+
+        // 2. 파일 유효성 검사
+        if (profileImage == null || profileImage.isEmpty()) {
+            throw new RuntimeException("업로드된 파일이 없습니다.");
+        }
+
+        // 3. 파일 저장 경로 및 이름 설정
+        // 이미지를 저장할 디렉토리 (프로젝트 루트 기준)
+        String uploadDir = "backend/src/main/static/images/profiles/";
+
+        // 파일 확장자 추출
+        String originalFilename = profileImage.getOriginalFilename();
+        String fileExt = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+
+        // 새로운 파일 이름 생성 (사용자ID + 현재시간)
+        String newFileName = userEntity.getId() + "_" + System.currentTimeMillis() + "." + fileExt;
+
+        // 전체 저장 경로 생성
+        File saveFile = new File(uploadDir + newFileName);
+
+        // 디렉토리가 존재하지 않으면 생성
+        if (!saveFile.getParentFile().exists()) {
+            saveFile.getParentFile().mkdirs();
+        }
+
+        // 4. 파일 저장
+        profileImage.transferTo(saveFile);
+        log.info("File saved to: {}", saveFile.getAbsolutePath());
+
+        // 5. 데이터베이스에 저장할 웹 접근 가능 경로
+        String dbPath = "/images/profiles/" + newFileName;
+
+        // 6. 엔티티 업데이트 및 DB 저장
+        // 기존 엔티티를 기반으로 새로운 엔티티를 생성 (불변성 유지)
+        UserInfoEntity updateEntity = UserInfoEntity.builder()
+                .id(userEntity.getId())
+                .email(userEntity.getEmail())
+                .password(userEntity.getPassword())
+                .nickname(userEntity.getNickname())
+                .profileImg(dbPath)
+                .regDt(userEntity.getRegDt())
+                .build();
+
+        userInfoRepository.save(updateEntity);
+
+        log.info("{}.updateProfileImage() End!", this.getClass().getName());
     }
 }

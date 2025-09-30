@@ -80,7 +80,7 @@ public class FollowService implements IFollowService {
         int followingCount = followRepository.countByFollower(user);
 
         return FollowDTO.builder()
-                .followCount(followerCount)
+                .followerCount(followerCount)
                 .followingCount(followingCount)
                 .build();
     }
@@ -89,18 +89,23 @@ public class FollowService implements IFollowService {
     @Transactional(readOnly = true)
     public List<FollowDTO> getFollowerList(Long userId) {
         UserInfoEntity user = userInfoRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾울 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다"));
 
-        return followRepository.findAllByFollower(user).stream()
+        // 'user'를 팔로우하고 있는 (following) 모든 관계를 찾은 뒤,
+        // 그 관계에서 팔로우를 한 사용자(follower)의 정보를 추출합니다.
+        return followRepository.findAllByFollowing(user).stream()
                 .map(followEntity -> {
-                    UserInfoEntity following = followEntity.getFollowing();
+                    UserInfoEntity follower = followEntity.getFollower();
                     return FollowDTO.builder()
-                            .email(following.getEmail())
-                            .nickname(following.getNickname())
+                            .userId(follower.getId())
+                            .email(follower.getEmail())
+                            .nickname(follower.getNickname())
+                            .profileImg(follower.getProfileImg())
                             .build();
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -112,8 +117,10 @@ public class FollowService implements IFollowService {
                 .map(followEntity -> {
                     UserInfoEntity following = followEntity.getFollowing();
                     return FollowDTO.builder()
+                            .userId(following.getId())
                             .email(following.getEmail())
                             .nickname(following.getNickname())
+                            .profileImg(following.getProfileImg())
                             .build();
                 })
                 .collect(Collectors.toList());

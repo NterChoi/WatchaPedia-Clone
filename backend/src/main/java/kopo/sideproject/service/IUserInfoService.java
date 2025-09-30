@@ -1,6 +1,8 @@
 package kopo.sideproject.service;
 
 import kopo.sideproject.dto.UserInfoDTO;
+import org.springframework.web.multipart.MultipartFile;
+
 
 public interface IUserInfoService {
     /**
@@ -28,4 +30,6 @@ public interface IUserInfoService {
     UserInfoDTO getUserInfo(String email) throws Exception;
 
     UserInfoDTO getUserInfoById(Long id) throws Exception;
+
+    void updateProfileImage(Long userId, MultipartFile profileImage) throws Exception;
 }
