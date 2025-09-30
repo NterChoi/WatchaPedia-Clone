@@ -4,6 +4,7 @@ import kopo.sideproject.dto.ReviewDTO;
 import kopo.sideproject.dto.ReviewRequestDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IReviewService {
 
@@ -16,4 +17,6 @@ public interface IReviewService {
     void deleteReview(Long reviewId, String userEmail);
 
     List<ReviewDTO> getReviewByUserId(Long userId);
+
+    Map<String, List<ReviewDTO>> getRatingsCalender(Long userId);
 }

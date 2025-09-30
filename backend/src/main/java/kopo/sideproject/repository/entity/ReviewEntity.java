@@ -37,6 +37,9 @@ public class ReviewEntity {
     @Column(name = "content", length = 5000)
     private String content;
 
+    @Column(name = "reg_dt", updatable = false)
+    private String regDt;
+
     public void updateReview(Double rating, String content) {
         this.rating = rating;
         this.content = content;

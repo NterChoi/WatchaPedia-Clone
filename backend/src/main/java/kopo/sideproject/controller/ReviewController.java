@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RequestMapping("/api")
@@ -121,5 +122,17 @@ public class ReviewController {
         log.info(this.getClass().getSimpleName(), "getReviewsByUserId End!");
 
         return ResponseEntity.ok(dtoList);
+    }
+
+    @GetMapping("/user/{userId}/ratings-calendar")
+    public ResponseEntity<Map<String, List<ReviewDTO>>> getRatingsByUserId(@PathVariable("userId") Long userId) {
+        log.info(this.getClass().getSimpleName(), "getRatingsByUserId Start!");
+        log.info("userId: " + userId);
+
+        Map<String, List<ReviewDTO>> calendarData = reviewService.getRatingsCalender(userId);
+
+        log.info(this.getClass().getSimpleName(), "getRatingsByUserId End!");
+
+        return ResponseEntity.ok(calendarData);
     }
 }

@@ -9,6 +9,7 @@ import kopo.sideproject.repository.entity.MovieEntity;
 import kopo.sideproject.repository.entity.ReviewEntity;
 import kopo.sideproject.repository.entity.UserInfoEntity;
 import kopo.sideproject.service.IReviewService;
+import kopo.sideproject.util.DateUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -68,6 +70,7 @@ public class ReviewService implements IReviewService {
                 .user(userInfoEntity)
                 .rating(reviewDTO.rating())
                 .content(reviewDTO.content())
+                .regDt(DateUtil.getDateTime("yyyy-MM-dd HH:mm:ss"))
                 .build();
 
         reviewRepository.save(reviewEntity);
@@ -137,5 +140,27 @@ public class ReviewService implements IReviewService {
         log.info(this.getClass().getSimpleName(), "getReviewByUserId End!");
 
         return dtoList;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, List<ReviewDTO>> getRatingsCalender(Long userId) {
+        log.info(this.getClass().getSimpleName(), "getRatingsCalender Start!");
+        log.info("userId: " + userId);
+
+        // 1. 사용자의 모든 리뷰를 영화 정보와 함께 조회
+        List<ReviewEntity> reviewEntities = reviewRepository.findAllByUserId(userId);
+
+        // 2. 리뷰 목록을 날짜(yyyy-MM-dd) 별로 그룹핑
+        Map<String, List<ReviewDTO>> calendarData = reviewEntities.stream()
+                .collect(Collectors.groupingBy(
+                                review -> review.getRegDt().substring(0, 10),
+                                Collectors.mapping(ReviewDTO::fromEntity, Collectors.toList())
+                        ));
+
+        log.info("Generated calendar data for user {}", calendarData.size());
+        log.info(this.getClass().getSimpleName(), "getRatingsCalender End!");
+
+        return calendarData;
     }
 }
