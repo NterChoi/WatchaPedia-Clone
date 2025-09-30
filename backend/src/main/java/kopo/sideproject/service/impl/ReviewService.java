@@ -2,6 +2,7 @@ package kopo.sideproject.service.impl;
 
 import kopo.sideproject.dto.ReviewDTO;
 import kopo.sideproject.dto.ReviewRequestDTO;
+import kopo.sideproject.dto.TmdbMovieDetailDTO;
 import kopo.sideproject.repository.MovieRepository;
 import kopo.sideproject.repository.ReviewRepository;
 import kopo.sideproject.repository.UserInfoRepository;
@@ -15,10 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -29,6 +29,7 @@ public class ReviewService implements IReviewService {
     private final ReviewRepository reviewRepository;
     private final MovieRepository movieRepository;
     private final UserInfoRepository  userInfoRepository;
+    private final MovieApiService movieApiService;
 
 
     @Override
@@ -60,17 +61,39 @@ public class ReviewService implements IReviewService {
 
         log.info("movie id: " + movieId + "review: " + reviewDTO.toString());
 
-        MovieEntity movieEntity = movieRepository.findById(movieId).orElseThrow(() -> new IllegalArgumentException("Movie not found with id: " + movieId));
+       // 1. 리뷰를 작성할 영화 정보가 DB에 있는지 확인, 없으면 TMDB에서 가져와 저장
+        MovieEntity movieEntity = movieRepository.findById(movieId)
+                .orElseGet(() -> {
+                    log.info("Movie with ID {} not found in DB. Fetching from TMDB" , movieId);
 
-        UserInfoEntity userInfoEntity = userInfoRepository.findByEmail(userEmail).orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
+                    // TMDB API를 통해 영화 상세 정보 조회
+                    TmdbMovieDetailDTO movieDetail = movieApiService.getMovieDetailsFromTMDB(movieId);
 
+                    // 새로운 MovieEntity 생성
+                    MovieEntity newMovieEntity = MovieEntity.builder()
+                            .movieId(movieDetail.id())
+                            .movieTitle(movieDetail.title())
+                            .overview(movieDetail.overview())
+                            .posterUrl(movieDetail.poster_path())
+                            .releaseDate(movieDetail.release_date())
+                            .voteAverage(movieDetail.vote_average())
+                            .build();
 
+                    // DB에 저장
+                    return movieRepository.save(newMovieEntity);
+                });
+
+        // 2. 사용자 정보 조회
+        UserInfoEntity userInfoEntity = userInfoRepository.findByEmail(userEmail)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
+
+        // 3. 리뷰 엔티티 생성 및 저장
         ReviewEntity reviewEntity = ReviewEntity.builder()
                 .movie(movieEntity)
                 .user(userInfoEntity)
                 .rating(reviewDTO.rating())
                 .content(reviewDTO.content())
-                .regDt(DateUtil.getDateTime("yyyy-MM-dd HH:mm:ss"))
+                .regDt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();
 
         reviewRepository.save(reviewEntity);
