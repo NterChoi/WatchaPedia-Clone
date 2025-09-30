@@ -18,20 +18,20 @@ import lombok.extern.slf4j.Slf4j;
 public class MovieEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "movie_id")
-    private Long movieId;
+    @Column(name = "movie_pk")
+    private Long moviePk;
+
+    @Column(unique = true, nullable = false)
+    private Long tmdbId; // TMDB ID
 
     @Column(name = "movie_title", nullable = false)
-    private String movieTitle;
-
-    @Column(name = "genre_ids")
-    private String genreIds;
+    private String title;
 
     @Column(name = "release_date")
     private String releaseDate;
 
-    @Column(name = "poster_url")
-    private String posterUrl;
+
+    private String posterPath;
 
     @Column(name = "overview", length = 2000)
     private String overview;

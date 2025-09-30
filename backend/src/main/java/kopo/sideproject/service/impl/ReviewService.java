@@ -36,7 +36,7 @@ public class ReviewService implements IReviewService {
     public List<ReviewDTO> getReviewsForMovies(Long movieId) {
         log.info(this.getClass().getSimpleName(), "getReviewsForMovies Start!");
 
-        Optional<MovieEntity> movieEntity = movieRepository.findById(movieId);
+        Optional<MovieEntity> movieEntity = movieRepository.findByTmdbId(movieId);
 
         if (movieEntity.isEmpty()) {
             log.warn("Movie not found with id: " + movieId);
@@ -56,25 +56,25 @@ public class ReviewService implements IReviewService {
 
     @Override
     @Transactional
-    public void postReview(Long movieId, ReviewRequestDTO reviewDTO, String userEmail) {
+    public void postReview(Long tmdbId, ReviewRequestDTO reviewDTO, String userEmail) {
         log.info(this.getClass().getSimpleName(), "postReview Start!");
 
-        log.info("movie id: " + movieId + "review: " + reviewDTO.toString());
+        log.info("tmdb id: " + tmdbId + "review: " + reviewDTO.toString());
 
        // 1. 리뷰를 작성할 영화 정보가 DB에 있는지 확인, 없으면 TMDB에서 가져와 저장
-        MovieEntity movieEntity = movieRepository.findById(movieId)
+        MovieEntity movieEntity = movieRepository.findByTmdbId(tmdbId)
                 .orElseGet(() -> {
-                    log.info("Movie with ID {} not found in DB. Fetching from TMDB" , movieId);
+                    log.info("Movie with ID {} not found in DB. Fetching from TMDB" , tmdbId);
 
                     // TMDB API를 통해 영화 상세 정보 조회
-                    TmdbMovieDetailDTO movieDetail = movieApiService.getMovieDetailsFromTMDB(movieId);
+                    TmdbMovieDetailDTO movieDetail = movieApiService.getMovieDetailsFromTMDB(tmdbId);
 
                     // 새로운 MovieEntity 생성
                     MovieEntity newMovieEntity = MovieEntity.builder()
-                            .movieId(movieDetail.id())
-                            .movieTitle(movieDetail.title())
+                            .tmdbId(movieDetail.id())
+                            .title(movieDetail.title())
                             .overview(movieDetail.overview())
-                            .posterUrl(movieDetail.poster_path())
+                            .posterPath(movieDetail.poster_path())
                             .releaseDate(movieDetail.release_date())
                             .voteAverage(movieDetail.vote_average())
                             .build();
@@ -93,7 +93,6 @@ public class ReviewService implements IReviewService {
                 .user(userInfoEntity)
                 .rating(reviewDTO.rating())
                 .content(reviewDTO.content())
-                .regDt(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
                 .build();
 
         reviewRepository.save(reviewEntity);
@@ -177,7 +176,7 @@ public class ReviewService implements IReviewService {
         // 2. 리뷰 목록을 날짜(yyyy-MM-dd) 별로 그룹핑
         Map<String, List<ReviewDTO>> calendarData = reviewEntities.stream()
                 .collect(Collectors.groupingBy(
-                                review -> review.getRegDt().substring(0, 10),
+                                review -> review.getRegDt().toLocalDate().toString(),
                                 Collectors.mapping(ReviewDTO::fromEntity, Collectors.toList())
                         ));
 

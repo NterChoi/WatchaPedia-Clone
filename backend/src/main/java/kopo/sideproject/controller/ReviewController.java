@@ -37,18 +37,18 @@ public class ReviewController {
         return ResponseEntity.ok(dtoList);
     }
 
-    @PostMapping("/movies/{movieId}/reviews")
-    public ResponseEntity<Void> postReview(@PathVariable("movieId") Long movieId, @RequestBody ReviewRequestDTO reviewDTO, Principal principal) {
+    @PostMapping("/reviews")
+    public ResponseEntity<Void> postReview(@RequestParam("tmdbId") Long tmdbId, @RequestBody ReviewRequestDTO reviewDTO, Principal principal) {
         log.info(this.getClass().getSimpleName(), "postReview Start!");
 
         // 2. Principal 객체에서 현재 로그인된 사용자의 이메일 가져오기
         String userEmail = principal.getName();
 
-        log.info("Requested movieId: " + movieId);
+        log.info("Requested tmdbId: " + tmdbId);
         log.info("Requested reviewDTO: " + reviewDTO);
         log.info("User Email from Session: " + userEmail);
 
-        this.reviewService.postReview(movieId, reviewDTO,  userEmail);
+        this.reviewService.postReview(tmdbId, reviewDTO,  userEmail);
 
         log.info(this.getClass().getSimpleName(), "postReview End!");
 

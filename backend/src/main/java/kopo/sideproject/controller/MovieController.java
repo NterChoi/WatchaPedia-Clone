@@ -48,7 +48,7 @@ public class MovieController {
 
         if (movie != null) {
             // 영화 정보가 있으면 200 OK 상태와 함꼐 영화 데이터를 반환
-            log.info("Found movie: " + movie.getMovieTitle());
+            log.info("Found movie: " + movie.getTitle());
             return ResponseEntity.ok(movie);
         } else {
             // 영화 정보가 없으면 404 Not Found 상태를 반환

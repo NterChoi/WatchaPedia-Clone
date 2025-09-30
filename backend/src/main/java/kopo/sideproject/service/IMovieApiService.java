@@ -39,6 +39,6 @@ public interface IMovieApiService {
     @GetMapping("/search/movie")
     TmdbResponseDTO getSearchMovies(@RequestParam("query") String query, @RequestParam("page") int page, @RequestParam("language") String language);
 
-    @GetMapping("/movie/{movie_id}")
-    TmdbMovieDetailDTO getMovieDetailsByTmdbId(@PathVariable("movie_id") Long tmdbId, @RequestParam("language") String language);
+    @GetMapping("/movie/{tmdbId}")
+    TmdbMovieDetailDTO getMovieDetailsByTmdbId(@PathVariable("tmdbId") Long tmdbId, @RequestParam("language") String language);
 }

@@ -11,8 +11,10 @@ public interface MovieRepository extends JpaRepository<MovieEntity, Long> {
 
     /**
      * 영화 제목으로 영화 정보 조회
-     * @param movieTitle 영화 제목
+     * @param title 영화 제목
      * @return 영화 정보
      */
-    Optional<MovieEntity> findByMovieTitle(String movieTitle);
+    Optional<MovieEntity> findByTitle(String title);
+
+    Optional<MovieEntity> findByTmdbId(Long tmdbId);
 }

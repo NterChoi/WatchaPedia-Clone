@@ -91,8 +91,17 @@ function DetailPage() {
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
 
-        if (rating === 0 || !content) {
-            alert("평점, 리뷰 내용을 모두 입력해주세요.");
+        const tmdbIdForReview = movieId; // 디버깅을 위해 새 변수에 할당
+
+        console.log(`[DEBUG] Submitting review for tmdbId: ${tmdbIdForReview}`);
+
+        if (!tmdbIdForReview) {
+            alert("[DEBUG] Error: tmdbId is missing. Cannot submit review.");
+            return;
+        }
+
+        if (rating === 0) {
+            alert("평점을 입력해주세요.");
             return;
         }
 
@@ -101,8 +110,11 @@ function DetailPage() {
             content: content
         };
 
+        const requestUrl = `/api/reviews?tmdbId=${tmdbIdForReview}`;
+        console.log(`[DEBUG] Full request URL: ${requestUrl}`);
+
         try {
-            const response = await fetch(`/api/movies/${movieId}/reviews`, {
+            const response = await fetch(requestUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -111,7 +123,9 @@ function DetailPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to submit review');
+                const errorBody = await response.text();
+                console.error("[DEBUG] Server responded with an error:", response.status, errorBody);
+                throw new Error(`Server error: ${response.status}`);
             }
 
             alert("리뷰가 성공적으로 등록되었습니다.");
@@ -120,8 +134,8 @@ function DetailPage() {
             fetchMovieData();
 
         } catch (error) {
-            console.error("Error submitting review:", error);
-            alert("리뷰 등록에 실패했습니다.");
+            console.error("[DEBUG] Error submitting review:", error);
+            alert("리뷰 등록에 실패했습니다. 개발자 콘솔을 확인해주세요.");
         }
     };
 
@@ -238,7 +252,6 @@ function DetailPage() {
                                 value={content}
                                 onChange={(e) => setContent(e.target.value)}
                                 placeholder="리뷰 내용을 작성해주세요."
-                                required
                             >
                             </textarea>
                         </div>

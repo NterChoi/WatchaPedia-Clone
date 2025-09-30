@@ -5,6 +5,7 @@ import kopo.sideproject.dto.TmdbResponseDTO;
 import kopo.sideproject.repository.MovieRepository;
 import kopo.sideproject.repository.entity.MovieEntity;
 import kopo.sideproject.service.IMovieApiService;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,17 +35,20 @@ public class MovieApiService {
         if (response != null && response.results() != null) {
 
             response.results().forEach(movieDto -> {
-                MovieEntity movieEntity = MovieEntity.builder()
-                        .movieTitle(movieDto.title())
-                        .posterUrl("https://image.tmdb.org/t/p/w500" + movieDto.posterPath())
-                        .overview(movieDto.overview())
-                        .voteAverage(movieDto.voteAverage())
-                        .releaseDate(movieDto.releaseDate())
-                        .genreIds(movieDto.genreIds().toString())
-                        .build();
+                // 이미 해당 영화가 DB에 저장되어 있는지 tmdbId로 확인
+                if (!movieRepository.findByTmdbId(movieDto.id()).isPresent()) {
+                    MovieEntity movieEntity = MovieEntity.builder()
+                            .tmdbId(movieDto.id())
+                            .title(movieDto.title())
+                            .posterPath(movieDto.posterPath())
+                            .overview(movieDto.overview())
+                            .voteAverage(movieDto.voteAverage())
+                            .releaseDate(movieDto.releaseDate())
+                            .build();
 
-                movieRepository.save(movieEntity);
-                log.info(movieDto.title() + " 저장 완료");
+                    movieRepository.save(movieEntity);
+                    log.info(movieDto.title() + " 저장 완료");
+                }
             });
 
         }
@@ -112,11 +116,17 @@ public class MovieApiService {
     public TmdbMovieDetailDTO getMovieDetailsFromTMDB(Long tmdbId) {
         log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB Start!");
 
-        // Feign Client를 사용하여 TMDB API에서 영화 상세 정보 호출
-        TmdbMovieDetailDTO rDTO = movieApiService.getMovieDetailsByTmdbId(tmdbId, "ko-KR");
+        try {
+            // Feign Client를 사용하여 TMDB API에서 영화 상세 정보 호출
+            TmdbMovieDetailDTO rDTO = movieApiService.getMovieDetailsByTmdbId(tmdbId, "ko-KR");
 
-        log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB End!");
+            log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB End!");
 
-        return rDTO;
+            return rDTO;
+        } catch (FeignException e) {
+            log.error("TMDB API call failed for tmdbId: {}. Status: {}, Body: {}", tmdbId, e.status(), e.contentUTF8(), e);
+            // 예외를 다시 던져서 상위 서비스에서 트랜잭션 롤백이 일어나도록 함
+            throw e;
+        }
     }
 }

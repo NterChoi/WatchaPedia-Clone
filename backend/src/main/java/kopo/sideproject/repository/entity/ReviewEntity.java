@@ -6,8 +6,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -37,8 +40,9 @@ public class ReviewEntity {
     @Column(name = "content", length = 5000)
     private String content;
 
-    @Column(name = "reg_dt", updatable = false)
-    private String regDt;
+    @CreationTimestamp // 엔티티가 생성될 때 자동으로 현재 시간 기록
+    @Column(name = "reg_dt", updatable = false, nullable = false)
+    private LocalDateTime regDt;
 
     public void updateReview(Double rating, String content) {
         this.rating = rating;
