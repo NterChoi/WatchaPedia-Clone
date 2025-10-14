@@ -30,7 +30,7 @@ public class ReviewEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private UserInfoEntity user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "movie_id", nullable = false)
     private MovieEntity movie;
 

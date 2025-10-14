@@ -30,7 +30,7 @@ public class MovieApiService {
     public void saveNowPlayingMovies(int page) {
         log.info(this.getClass().getName() + ".saveNowPlayingMovies Start!");
 
-        TmdbResponseDTO response = movieApiService.getNowPlayingMovies( page, "ko-KR");
+        TmdbResponseDTO response = movieApiService.getNowPlayingMovies( page, "ko-KR", "KR");
 
         if (response != null && response.results() != null) {
 
@@ -96,7 +96,7 @@ public class MovieApiService {
         log.info(this.getClass().getName() + ".getNowPlayingMoviesFromTMDB Start!");
 
         // Feign Client를 사용하여 TMDB API 호출
-        TmdbResponseDTO response = movieApiService.getNowPlayingMovies(page, "ko-KR");
+        TmdbResponseDTO response = movieApiService.getNowPlayingMovies(page, "ko-KR", "KR");
 
         log.info(this.getClass().getName() + ".getNowPlayingMoviesFromTMDB End!");
 
@@ -118,7 +118,7 @@ public class MovieApiService {
 
         try {
             // Feign Client를 사용하여 TMDB API에서 영화 상세 정보 호출
-            TmdbMovieDetailDTO rDTO = movieApiService.getMovieDetailsByTmdbId(tmdbId, "ko-KR");
+                        TmdbMovieDetailDTO rDTO = movieApiService.getMovieDetailsByTmdbId(tmdbId, "ko-KR", "credits,images", "en,null");
 
             log.info(this.getClass().getName() + ".getMovieDetailsFromTMDB End!");
 
@@ -128,5 +128,16 @@ public class MovieApiService {
             // 예외를 다시 던져서 상위 서비스에서 트랜잭션 롤백이 일어나도록 함
             throw e;
         }
+    }
+
+    public TmdbResponseDTO getUpcomingMoviesFromTMDB(int page) {
+        log.info(this.getClass().getName() + ".getUpcomingMovies Start!");
+
+        // Feign Client를 사용하여 TMDB API 호출
+        TmdbResponseDTO response = movieApiService.getUpcomingMovies(page, "ko-KR", "KR");
+
+        log.info(this.getClass().getName() + ".getUpcomingMovies End!");
+
+        return response;
     }
 }

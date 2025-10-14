@@ -20,7 +20,8 @@ public interface IMovieApiService {
     @GetMapping("/movie/now_playing")
     TmdbResponseDTO getNowPlayingMovies(
             @RequestParam("page") int page,
-            @RequestParam("language") String language
+            @RequestParam("language") String language,
+            @RequestParam("region") String region
     );
 
     @GetMapping("/movie/popular")
@@ -40,5 +41,15 @@ public interface IMovieApiService {
     TmdbResponseDTO getSearchMovies(@RequestParam("query") String query, @RequestParam("page") int page, @RequestParam("language") String language);
 
     @GetMapping("/movie/{tmdbId}")
-    TmdbMovieDetailDTO getMovieDetailsByTmdbId(@PathVariable("tmdbId") Long tmdbId, @RequestParam("language") String language);
+    TmdbMovieDetailDTO getMovieDetailsByTmdbId(@PathVariable("tmdbId") Long tmdbId,
+                                               @RequestParam("language") String language,
+                                               @RequestParam("append_to_response") String appendToResponse,
+                                               @RequestParam("include_image_language") String includeImageLanguage);
+
+    @GetMapping("/movie/upcoming")
+    TmdbResponseDTO getUpcomingMovies(
+            @RequestParam("page") int page,
+            @RequestParam("language") String language,
+            @RequestParam("region") String region
+    );
 }

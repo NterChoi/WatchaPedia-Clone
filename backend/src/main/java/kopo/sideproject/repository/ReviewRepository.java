@@ -2,6 +2,7 @@ package kopo.sideproject.repository;
 
 import kopo.sideproject.repository.entity.MovieEntity;
 import kopo.sideproject.repository.entity.ReviewEntity;
+import kopo.sideproject.repository.entity.UserInfoEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

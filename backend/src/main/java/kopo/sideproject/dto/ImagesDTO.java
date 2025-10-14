@@ -8,6 +8,8 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record ImagesDTO(
-        List<ImageDTO> backdrops
+        List<ImageDTO> backdrops,
+        List<ImageDTO> logos,
+        List<ImageDTO> posters
 ) {
 }

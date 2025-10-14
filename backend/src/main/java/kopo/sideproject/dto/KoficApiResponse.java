@@ -4,8 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record ImageDTO(
-    @JsonProperty("file_path")
-    String filePath
+public record KoficApiResponse(
+        @JsonProperty("boxOfficeResult") KoficBoxOfficeResult boxOfficeResult
 ) {
 }

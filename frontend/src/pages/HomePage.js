@@ -2,91 +2,104 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Slider from 'react-slick';
 
+import StarRating from '../components/StarRating';
+
 // react-slick의 CSS를 가져옵니다.
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 function HomePage() {
-    // '현재 상영작'과 '인기 영화' 목록을 저장할 두 개의 상태를 만듭니다.
     const [nowPlayingMovies, setNowPlayingMovies] = useState([]);
-    const [popularMovies, setPopularMovies] = useState([]);
+    const [boxOfficeMovies, setBoxOfficeMovies] = useState([]);
+    const [upcomingMovies, setUpcomingMovies] = useState([]); // 개봉 예정작 상태 추가
+    const [userRatings, setUserRatings] = useState({});
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // 데이터를 가져오는 비동기 함수
-        const fetchMovies = async () => {
+        const fetchMoviesAndRatings = async () => {
             setLoading(true);
             try {
-                // 두 API를 동시에 호출하여 병렬로 데이터를 가져옵니다.
-                const [nowPlayingRes, popularRes] = await Promise.all([
+                const [nowPlayingRes, boxOfficeRes, upcomingRes, ratingsRes] = await Promise.all([
                     fetch('/api/movies/now-playing'),
-                    fetch('/api/movies/popular')
+                    fetch('/api/movies/box-office'),
+                    fetch('/api/movies/upcoming'), // 개봉 예정작 API 호출 추가
+                    fetch('/api/reviews/me')
                 ]);
 
                 const nowPlayingData = await nowPlayingRes.json();
-                const popularData = await popularRes.json();
+                const boxOfficeData = await boxOfficeRes.json();
+                const upcomingData = await upcomingRes.json(); // 데이터 파싱
+                const ratingsData = await ratingsRes.json();
 
-                // 각 API 응답의 results 배열을 상태에 저장합니다.
                 setNowPlayingMovies(nowPlayingData.results || []);
-                setPopularMovies(popularData.results || []);
+                setBoxOfficeMovies(boxOfficeData || []);
+                setUpcomingMovies(upcomingData.results || []); // 상태 업데이트
+
+                if (ratingsData) {
+                    const ratingsMap = ratingsData.reduce((acc, review) => {
+                        acc[review.movieId] = review.rating;
+                        return acc;
+                    }, {});
+                    setUserRatings(ratingsMap);
+                }
 
             } catch (error) {
-                console.error('영화 데이터를 가져오는 중 오류 발생:', error);
+                console.error('데이터를 가져오는 중 오류 발생:', error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchMovies();
+        fetchMoviesAndRatings();
     }, []);
 
-    // 슬라이더의 설정을 정의합니다.
     const sliderSettings = {
-        dots: false, // 아래 점 표시 안함
-        infinite: true, // 무한 반복
-        speed: 500, // 넘어가는 속도
-        slidesToShow: 5, // 한 번에 보여줄 슬라이드 개수
-        slidesToScroll: 5, // 한 번에 넘길 슬라이드 개수
-        responsive: [ // 반응형 웹 설정
-            {
-                breakpoint: 1024,
-                settings: {
-                    slidesToShow: 3,
-                    slidesToScroll: 3,
-                }
-            },
-            {
-                breakpoint: 600,
-                settings: {
-                    slidesToShow: 2,
-                    slidesToScroll: 2,
-                }
-            }
+        dots: false,
+        infinite: false,
+        speed: 500,
+        slidesToShow: 5,
+        slidesToScroll: 5,
+        responsive: [
+            { breakpoint: 1024, settings: { slidesToShow: 3, slidesToScroll: 3 } },
+            { breakpoint: 600, settings: { slidesToShow: 2, slidesToScroll: 2 } }
         ]
     };
 
-    // 영화 포스터를 렌더링하는 함수
     const renderMovieSlider = (movies) => {
-        if (loading) {
-            return <p>영화를 불러오는 중입니다...</p>;
-        }
-        if (!movies || movies.length === 0) {
-            return <p>표시할 영화가 없습니다.</p>;
-        }
+        if (loading) return <p>영화를 불러오는 중입니다...</p>;
+        if (!movies || movies.length === 0) return <p>표시할 영화가 없습니다.</p>;
+        
         return (
             <Slider {...sliderSettings}>
-                {movies.map(movie => (
-                    <div key={movie.id} style={{ padding: '10px' }}>
-                        <Link to={`/movie/${movie.id}`}>
-                            <img
-                                src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                                alt={movie.title}
-                                style={{ width: '100%', borderRadius: '10px' }}
-                            />
-                        </Link>
-                        <h4 style={{ fontSize: '16px', textAlign: 'center', marginTop: '10px' }}>{movie.title}</h4>
-                    </div>
-                ))}
+                {movies.map(movie => {
+                    const userRating = userRatings[movie.id];
+                    const isRated = userRating !== undefined;
+                    const ratingToShow = isRated ? userRating : (movie.vote_average / 2);
+
+                    return (
+                        <div key={movie.id} style={{ padding: '10px' }}>
+                            <Link to={`/movie/${movie.id}`}>
+                                <img
+                                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                                    alt={movie.title}
+                                    style={{ width: '100%', borderRadius: '8px', marginBottom: '10px' }}
+                                />
+                            </Link>
+                            <div style={{ padding: '0 5px' }}>
+                                <h4 style={{ fontSize: '16px', fontWeight:'bold', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{movie.title}</h4>
+                                <div style={{display: 'flex', alignItems: 'center', marginTop: '5px'}}>
+                                    <span style={{ fontSize: '13px', color: isRated ? '#FF4081' : '#555', fontWeight: 'bold' }}>
+                                        {isRated ? '평가함' : '평균'}
+                                    </span>
+                                    <StarRating rating={ratingToShow} size={16} />
+                                    <span style={{marginLeft: '8px', fontSize: '14px', color: '#555'}}>
+                                        {ratingToShow.toFixed(1)}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </Slider>
         );
     };
@@ -96,8 +109,11 @@ function HomePage() {
             <h1 style={{ marginBottom: '20px' }}>현재 상영 중인 영화</h1>
             {renderMovieSlider(nowPlayingMovies)}
 
-            <h1 style={{ marginTop: '50px', marginBottom: '20px' }}>박스오피스 순위 (인기 영화)</h1>
-            {renderMovieSlider(popularMovies)}
+            <h1 style={{ marginTop: '50px', marginBottom: '20px' }}>일별 박스오피스 순위</h1>
+            {renderMovieSlider(boxOfficeMovies)}
+
+            <h1 style={{ marginTop: '50px', marginBottom: '20px' }}>개봉 예정인 영화</h1>
+            {renderMovieSlider(upcomingMovies)}
         </div>
     );
 }

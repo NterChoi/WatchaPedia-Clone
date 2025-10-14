@@ -24,12 +24,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // CSRF 보호 비활성화 (stateless API의 경우 보통 비활성화)
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.disable())
                 // 모든 요청에 대해 접근 허용 (추후 API별로 권한 설정 필요)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/", "/index.html", "/static/**", "/*.js", "/*.json", "/*.ico", "/*.png", "/*.svg", "/manifest.json", "/logo192.png", "/logo512.png").permitAll()
                         .requestMatchers("/api/user/signup", "/api/user/login", "/api/user/exists/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "api/movies/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/movies/**").permitAll()
+                        .requestMatchers("/api/reviews/me").permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout

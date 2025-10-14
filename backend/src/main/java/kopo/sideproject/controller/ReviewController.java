@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -134,5 +135,22 @@ public class ReviewController {
         log.info(this.getClass().getSimpleName(), "getRatingsByUserId End!");
 
         return ResponseEntity.ok(calendarData);
+    }
+
+    @GetMapping("/reviews/me")
+    public ResponseEntity<List<ReviewDTO>> getMyReviews(Principal principal) throws Exception{
+        log.info(this.getClass().getSimpleName(), "getMyReviews Start!");
+
+        // 사용자가 로그인하지 않은 경우 , 빈 목록을 반환합니다
+        if (principal == null) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
+        String userEmail = principal.getName();
+        List<ReviewDTO> dtoList = reviewService.getReviewsByUserEmail(userEmail);
+
+        log.info(this.getClass().getSimpleName(), "getMyReviews End!");
+
+        return ResponseEntity.ok(dtoList);
     }
 }

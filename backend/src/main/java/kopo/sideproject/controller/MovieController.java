@@ -10,6 +10,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import kopo.sideproject.service.impl.KoficService;
+import kopo.sideproject.dto.TmdbResponseDTO;
+
 import java.util.List;
 
 @Slf4j
@@ -19,6 +22,19 @@ import java.util.List;
 public class MovieController {
 
     private final MovieApiService movieApiService;
+    private final KoficService koficService; // KoficService 주입
+
+    /**
+     * KOFIC API를 통해 일별 박스오피스 순위를 조회하고, 각 영화의 상세 정보는 TMDB에서 가져와 조합된 데이터를 반환합니다.
+     * @return 조합된 영화 목록 데이터
+     */
+    @GetMapping("/box-office")
+    public ResponseEntity<List<TmdbResponseDTO.MovieResultDto>> getBoxOffice() {
+        log.info(this.getClass().getName() + ".getBoxOffice Start!");
+        List<TmdbResponseDTO.MovieResultDto> movieList = koficService.getDailyBoxOfficeAndMergeWithTmdb();
+        log.info(this.getClass().getName() + ".getBoxOffice End!");
+        return ResponseEntity.ok(movieList);
+    }
 
     /**
      *
@@ -93,5 +109,13 @@ public class MovieController {
         } else {
             return ResponseEntity.notFound().build();
         }
+    }
+
+    @GetMapping("/upcoming")
+    public ResponseEntity<TmdbResponseDTO> getUpcomingMovies(@RequestParam(defaultValue = "1") int page) {
+        log.info(this.getClass().getName() + ".getUpcomingMovies Start!");
+        TmdbResponseDTO response = movieApiService.getUpcomingMoviesFromTMDB(page);
+        log.info(this.getClass().getName() + ".getUpcomingMovies End!");
+        return ResponseEntity.ok(response);
     }
 }

@@ -1,19 +1,36 @@
 import React from 'react';
-import {Link} from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import StarRating from './components/StarRating';
 
-// MovieCard 컴포넌트는 부모(App.js)로부터 'movie'라는 이름의 데이터를 전달받습니다.
-// { movie }는 전달받은 데이터 묶음에서 movie 속성만 바로 추출해서 사용하는 문법입니다.
-function MovieCard({movie}) {
-    // 이 컴포넌트는 영화 카드 하나의 UI를 책임집니다.
+function MovieCard({ movie }) {
+    const isRated = movie.userRating !== undefined;
+    const ratingToShow = isRated ? movie.userRating : (movie.voteAverage / 2);
+
     return (
         <Link to={`/movie/${movie.movieId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-            <div style={{margin: '20px', maxWidth: '200px'}}>
-                <img src={movie.posterUrl} alt={movie.movieTitle} style={{width: '100%'}}/>
-                <h4 style={{fontSize: '16px'}}>{movie.movieTitle}</h4>
+            <div style={{ margin: '20px', width: '200px' }}>
+                <img 
+                    src={movie.posterUrl} 
+                    alt={movie.movieTitle} 
+                    style={{ width: '100%', borderRadius: '8px', marginBottom: '10px' }} 
+                />
+                <div style={{ padding: '0 5px' }}>
+                    <h4 style={{ fontSize: '16px', fontWeight:'bold', color: '#333', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {movie.movieTitle}
+                    </h4>
+                    <div style={{display: 'flex', alignItems: 'center', marginTop: '5px'}}>
+                        <span style={{ fontSize: '13px', color: isRated ? '#FF4081' : '#555', fontWeight: 'bold' }}>
+                            {isRated ? '평가함' : '평균'}
+                        </span>
+                        <StarRating rating={ratingToShow} size={16} />
+                        <span style={{marginLeft: '8px', fontSize: '14px', color: '#555'}}>
+                            {ratingToShow.toFixed(1)}
+                        </span>
+                    </div>
+                </div>
             </div>
         </Link>
     );
 }
 
-// 다른 파일에서 <MovieCard /> 형태로 이 컴포넌트를 사용할 수 있도록 내보냅니다.
 export default MovieCard;

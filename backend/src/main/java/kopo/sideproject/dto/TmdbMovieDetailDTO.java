@@ -12,12 +12,16 @@ public record TmdbMovieDetailDTO(
         @JsonProperty("original_title")
         String originalTitle,
         String overview,
-        // JSON의 'poster_path' 필드를 자바의 'posterPath' 변수에 매핑합니다.
+        @JsonProperty("poster_path")
         String poster_path,
+        @JsonProperty("backdrop_path")
+        String backdrop_path,
+        @JsonProperty("release_date")
         String release_date,
         Integer runtime,
+        @JsonProperty("vote_average")
         Double vote_average,
-        // 장르 정보는 이름만 추출하여 리스트로 받음
+        String tagline,
         List<GenreDTO> genres,
         @JsonProperty("production_countries")
         List<CountryDTO> productionCountries,

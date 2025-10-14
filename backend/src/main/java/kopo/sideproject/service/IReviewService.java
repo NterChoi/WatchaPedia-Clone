@@ -19,4 +19,6 @@ public interface IReviewService {
     List<ReviewDTO> getReviewByUserId(Long userId);
 
     Map<String, List<ReviewDTO>> getRatingsCalender(Long userId);
+
+    List<ReviewDTO> getReviewsByUserEmail(String userEmail);
 }

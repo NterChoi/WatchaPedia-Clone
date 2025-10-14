@@ -185,4 +185,26 @@ public class ReviewService implements IReviewService {
 
         return calendarData;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ReviewDTO> getReviewsByUserEmail(String userEmail) {
+        log.info(this.getClass().getSimpleName(), "getReviewsByUserEmail Start!");
+
+        // 1. 이메일로 UserInfoEntity 찾기
+        UserInfoEntity userInfoEntity = userInfoRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with email: " + userEmail));
+
+        // 2. 찾은 UserInfoEntity로 모든 ReviewEntity 찾기 (1단계에서 만든 메소드 사용)
+        List<ReviewEntity> reviewEntities = reviewRepository.findAllByUserId(userInfoEntity.getId());
+
+        // 3. ReviewEntity 목록을 ReviewDTO 목록으로 변환
+        List<ReviewDTO> dtoList = reviewEntities.stream()
+                .map(ReviewDTO::fromEntity)
+                .toList();
+
+        log.info("Found {} reviews for user {}", dtoList.size(), userEmail);
+        log.info(this.getClass().getSimpleName(), "getReviewsByUserEmail End!");
+        return dtoList;
+    }
 }
